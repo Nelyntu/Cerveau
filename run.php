@@ -13,10 +13,10 @@ require 'secret.php'; //$secret
 $options = array(
 	//Required
 	'secret' => $secret, // Client secret
-	'nick' => 'ValZarGaming', // Twitch username
+	'nick' => 'nelyntu_', // Twitch username
 	'channels' => [
-		'valzargaming', // Channel to join
-		'daathren', // (Optional) Additional channels
+		'nelyntu_', // Channel to join
+//		'daathren', // (Optional) Additional channels
 	],
 	
 	//Optional
@@ -87,4 +87,3 @@ $options['responses']['discord'] = $options['social']['discord'];
 
 $twitch = new Twitch\Twitch($options);
 $twitch->run();
-?>

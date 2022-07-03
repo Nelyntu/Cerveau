@@ -6,10 +6,8 @@
 * Copyright (c) 2021 ValZarGaming <valzargaming@gmail.com>
 */
 
-
 namespace Twitch;
 
-use Twitch\Commands;
 use React\EventLoop\Factory;
 use React\Socket\ConnectionInterface;
 use React\Socket\Connector;
@@ -26,7 +24,7 @@ class Twitch
 	private $channel_id;
 	
 	private $verbose;
-	private $socket_options;
+//	private $socket_options;
 	private $debug;
 	
 	private $secret;
@@ -49,9 +47,10 @@ class Twitch
 	private $reallastchannel;
 	private $lastmessage;
 	private $lastuser; //Used a command
-	private $lastchannel; //Where command was used
+//	private $lastchannel; //Where command was used
+    private bool $closing = false;
 
-	function __construct(array $options = [])
+    function __construct(array $options = [])
 	{
 		if (php_sapi_name() !== 'cli') trigger_error('TwitchPHP will not run on a webserver. Please use PHP CLI to run a TwitchPHP self-bot.', E_USER_ERROR);
 		
@@ -71,17 +70,16 @@ class Twitch
 		$this->private_functions = $options['private_functions'] ?? array();
 		
 		$this->verbose = $options['verbose'];
-		$this->socket_options = $options['socket_options'];
-		$this->debug = $options['debug'];
+//		$this->socket_options = $options['socket_options'];
+		$this->debug = $options['debug'] ?? false;
 		
-		$this->discord = $options['discord'];
-		$this->discord_output = $options['discord_output'];
-		$this->guild_id = $options['guild_id'];
-		$this->channel_id = $options['channel_id'];
+		$this->discord = $options['discord'] ?? null;
+		$this->discord_output = $options['discord_output'] ?? false;
+		$this->guild_id = $options['guild_id'] ?? null;
+		$this->channel_id = $options['channel_id'] ?? null;
 		
 		$this->connector = new Connector($this->loop, $options['socket_options']);
-		
-		include __DIR__ . '\Commands.php';
+
 		if (is_array($options['badwords'])) $this->badwords = $options['badwords'];
 		$this->commands = $options['commands'] ?? new Commands($this, $this->verbose, $this->debug);
 	}
@@ -108,10 +106,10 @@ class Twitch
 			if(!$this->closing) {
 				$this->closing = true;
 				if ($this->verbose) $this->emit('[LOOP->STOP]');
-				$twitch = $this;
-				$this->loop->addTimer(3, function () use ($twitch) {
-					$twitch->closing = false;
-					$twitch->loop->stop();
+//				$twitch = $this;
+				$this->loop->addTimer(3, function () {
+                    $this->closing = false;
+                    $this->loop->stop();
 				});
 			}
 		}
@@ -122,7 +120,8 @@ class Twitch
 		if (isset($this->connection)) {
 			$this->connection->write("PRIVMSG #" . ($channel ?? $this->reallastchannel ?? current($this->channels)) . " :" . $data . "\n");
 			$this->emit('[REPLY] #' . ($channel ?? $this->reallastchannel ?? current($this->channels)) . ' - ' . $data);
-			if ($channel) $this->reallastchannel = $channel ?? $this->reallastchannel ?? current($this->channels);
+			// if ($channel)
+            $this->reallastchannel = $channel ?? $this->reallastchannel ?? current($this->channels);
 		}
 	}
 	
@@ -160,7 +159,7 @@ class Twitch
 	{
 		if ($this->verbose) $this->emit('[BAN] ' . $username . ' - ' . $reason);
 		if ( ($username != $this->nick) && (!in_array($username, $this->channels)) ) {
-			$connection->write("/ban $username $reason");
+			$this->connection->write("/ban $username $reason");
 			return true;
 		}
 		return false;
@@ -194,25 +193,25 @@ class Twitch
 		if ($this->verbose) $this->emit("[CONNECT] $url:$port");
 		
 		if(!$this->connection) {
-			$twitch = $this;
+//			$twitch = $this;
 			$this->connector->connect("$url:$port")->then(
-				function (ConnectionInterface $connection) use ($twitch) {
-					$twitch->connection = $connection;
-					$twitch->initIRC($twitch->connection);
+				function (ConnectionInterface $connection) {
+                    $this->connection = $connection;
+                    $this->initIRC($this->connection);
 					
-					$connection->on('data', function($data) use ($connection, $twitch) {
-						$twitch->process($data, $twitch->connection);
+					$connection->on('data', function($data) use ($connection) {
+                        $this->process($data, $this->connection);
 					});
-					$connection->on('close', function () use ($twitch) {
-						$twitch->emit('[CLOSE]');
+					$connection->on('close', function () {
+                        $this->emit('[CLOSE]');
 					});
-					$twitch->emit('[CONNECTED]');
+                    $this->emit('[CONNECTED]');
 				},
-				function (Exception $exception) {
-					$twitch->emit('[ERROR] ' . $exception->getMessage());
+				function (\Exception $exception) {
+                    $this->emit('[ERROR] ' . $exception->getMessage());
 				}
 			);
-		} else $twitch->emit('[SYMANTICS ERROR] A connection already exists!');
+		} else $this->emit('[SYMANTICS ERROR] A connection already exists!');
 	}
 	protected function initIRC(ConnectionInterface $connection): void
 	{
@@ -294,8 +293,8 @@ class Twitch
 			$command = strtolower(trim($dataArr[0]));
 			if ($this->verbose) $this->emit("[COMMAND] `$command`"); 
 			$this->lastuser = $this->reallastuser;
-			$this->lastchannel = $this->reallastchannel;
-			$this->lastchannel = null;
+//			$this->lastchannel = $this->reallastchannel;
+//			$this->lastchannel = null;
 			
 			//Public commands
 			if (in_array($command, $this->functions)) {
@@ -337,11 +336,18 @@ class Twitch
 		}
 		return $user;
 	}
-	
+
+    /**
+     * For "#foo bar', it will return "foo"
+     *
+     * @param string $data
+     * @return string|null
+     */
 	protected function parseChannel(string $data): ?string
 	{
 		$arr = explode(' ', substr($data, strpos($data, '#')));
-		if (substr($arr[0], 0, 1) == "#") return substr($arr[0], 1);
+		if (str_starts_with($arr[0], "#")) return substr($arr[0], 1);
+        return null;
 	}
 	
 	/*
@@ -392,15 +398,15 @@ class Twitch
 		return $this->guild_id;
 	}
 	
-	public function getChannelId(): ?string
-	{
-		return $this->channel_id;
-	}
+//	public function getChannelId(): ?string
+//	{
+//		return $this->channel_id;
+//	}
 	
-	public function linkDiscord($discord): void
-	{
-		$this->discord = $discord;
-	}
+//	public function linkDiscord($discord): void
+//	{
+//		$this->discord = $discord;
+//	}
 	
 	public function discordRelay($payload): void
 	{
