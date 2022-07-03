@@ -16,15 +16,12 @@ $options = array(
 	'nick' => 'nelyntu_', // Twitch username
 	'channels' => [
 		'nelyntu_', // Channel to join
-//		'daathren', // (Optional) Additional channels
+		'revingbell', // (Optional) Additional channels
+        'otplol_',
 	],
 	
 	//Optional
-	//'discord' => $discord, // Pass your own instance of DiscordPHP (https://github.com/discord-php/DiscordPHP)	
-	//'discord_output' => true, // Output Twitch chat to a Discord server
-	//'guild_id' => '116927365652807686', //ID of the Discord server
-	//'channel_id' => '431415282129698866', //ID of the Discord channel to output messages to
-	
+
 	//'loop' => $loop, // Pass your own instance of $loop to share with other ReactPHP applications
 	'socket_options' => [
         'dns' => '8.8.8.8', // Can change DNS provider

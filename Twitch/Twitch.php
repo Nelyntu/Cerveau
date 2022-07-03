@@ -17,12 +17,6 @@ class Twitch
 	protected $loop;
 	protected $commands;
 	
-	
-	private $discord;
-	private $discord_output;
-	private $guild_id;
-	private $channel_id;
-	
 	private $verbose;
 //	private $socket_options;
 	private $debug;
@@ -72,12 +66,7 @@ class Twitch
 		$this->verbose = $options['verbose'];
 //		$this->socket_options = $options['socket_options'];
 		$this->debug = $options['debug'] ?? false;
-		
-		$this->discord = $options['discord'] ?? null;
-		$this->discord_output = $options['discord_output'] ?? false;
-		$this->guild_id = $options['guild_id'] ?? null;
-		$this->channel_id = $options['channel_id'] ?? null;
-		
+
 		$this->connector = new Connector($this->loop, $options['socket_options']);
 
 		if (is_array($options['badwords'])) $this->badwords = $options['badwords'];
@@ -244,7 +233,6 @@ class Twitch
 				}
 				$payload = '@' . $this->lastuser . ', ' . $response . "\n";
 				$this->sendMessage($payload);
-				$this->discordRelay('[REPLY] #' . $this->reallastchannel . ' - ' . $payload);
 			}
 		}
 	}
@@ -273,10 +261,8 @@ class Twitch
 		}
 		if ($this->verbose) $this->emit('[PRIVMSG] (#' . $this->reallastchannel . ') ' . $this->reallastuser . ': ' . $this->lastmessage);
 		
-		$this->discordRelay('[MSG] #' . $this->reallastchannel . ' - ' . $this->reallastuser . ': ' . $this->lastmessage);
 		if (!empty($this->badwords) && $this->badwordsCheck($this->lastmessage)) {
 			$this->ban($this->reallastuser);
-			$this->discordRelay('[BANNED - BAD WORD] #' . $this->reallastchannel . ' - ' . $this->reallastuser);
 		}
 		
 		$response = '';
@@ -386,40 +372,5 @@ class Twitch
 	public function getPrivateFunctions(): array
 	{
 		return $this->private_functions;
-	}
-	
-	public function getDiscordOutput(): ?bool
-	{
-		return $this->discord_output;
-	}
-	
-	public function getGuildId(): ?string
-	{
-		return $this->guild_id;
-	}
-	
-//	public function getChannelId(): ?string
-//	{
-//		return $this->channel_id;
-//	}
-	
-//	public function linkDiscord($discord): void
-//	{
-//		$this->discord = $discord;
-//	}
-	
-	public function discordRelay($payload): void
-	{
-		if ($this->discord_output) {
-			if ($this->verbose) $this->emit('[DISCORD CHAT RELAY]');
-			if(
-				($discord = $this->discord)
-				&&
-				($guild = $discord->guilds->offsetGet($this->guild_id))
-				&&
-				($channel = $guild->channels->offsetGet($this->channel_id))
-			)
-			$channel->sendMessage($payload);
-		}
 	}
 }

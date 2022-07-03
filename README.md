@@ -70,10 +70,6 @@ $options = array(
 	],
 	
 	//Optional
-	//'discord' => $discord, // Pass your own instance of DiscordPHP (https://github.com/discord-php/DiscordPHP)	
-	//'discord_output' => true, // Output Twitch chat to a Discord server's channel
-	//'guild_id' => '116927365652807686', //ID of the server
-	//'channel_id' => '431415282129698866', //ID of the channel
 	
 	//'loop' => $loop, // Pass your own instance of $loop to share with other ReactPHP applications
 	'socket_options' => [
