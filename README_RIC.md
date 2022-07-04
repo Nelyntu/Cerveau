@@ -1,5 +1,6 @@
 packages ubuntu
 php8.1-cli
+sudo apt install php-mbstring
 
 installé : php 8.1.2
 
