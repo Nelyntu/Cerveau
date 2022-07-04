@@ -5,7 +5,8 @@ A chat self-bot built with ReactPHP for the official [Twitch TV](https://www.twi
 
 ## Before you start
 
-Before you start using this Library, you **need** to know how PHP works, you need to know the language and you need to know how Event Loops and Promises work. This is a fundamental requirement before you start. Without this knowledge, you will only suffer.
+You should know it's a fork from VZGCoders/TwitchPHP.
+Before you start using this Library, you **need** to know how PHP works, you need to know the language, how Event Loops and Promises work. This is a fundamental requirement before you start. Without this knowledge, you will only suffer.
 
 ## FAQ
 
@@ -18,9 +19,7 @@ Before you start using this Library, you **need** to know how PHP works, you nee
 
 ### Requirements
 
-- PHP 7.4.13
-	- Technically the library can run on any PHP7 version or higher, however, no support will be given for any version lower than 7.4.13.
-	- Despite the description above, this library is being built with PHP8 support in mind. There will come a time where PHP7 is no longer supported.
+- PHP 8.1.*
 - Composer
 
 ### Windows and SSL
@@ -42,7 +41,7 @@ The path to the caextract must be set in the [`php.ini`](https://secure.php.net/
 
 TwitchPHP is installed using [Composer](https://getcomposer.org).
 
-1. Run `composer require VZGCoders/TwitchPHP`. This will install the lastest release.
+1. Run `composer require nelyntu/TwitchPHP`. This will install the lastest release.
 2. Include the Composer autoload file at the top of your main file:
 	- `include __DIR__.'/vendor/autoload.php';`
 3. Make a bot!
@@ -58,7 +57,6 @@ TwitchPHP is installed using [Composer](https://getcomposer.org).
 <?php
 require 'vendor/autoload.php';
 
-//$loop = React\EventLoop\Factory::create();
 require 'secret.php'; //$secret
 $options = array(
 	//Required

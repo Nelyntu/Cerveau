@@ -1,3 +1,5 @@
+# Nelyntu's notes
+
 packages ubuntu
 php8.1-cli
 sudo apt install php-mbstring
