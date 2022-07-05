@@ -258,8 +258,8 @@ class Twitch
 	{
         $this->emit('[BADWORD CHECK] ' . $message, self::LOG_DEBUG);
 		foreach ($this->badwords as $badword) {
-			if (str_contains($message, $badword)) {
-				$this->emit('[BADWORD] ' . $badword, Twitch::LOG_INFO);
+            if (strpos($message, $badword) !== false) {
+                $this->emit('[BADWORD] ' . $badword, self::LOG_INFO);
 				return true;
 			}
 		}
@@ -284,7 +284,7 @@ class Twitch
 		$response = '';
 		$commandsymbol = '';
 		foreach($this->commandsymbol as $symbol) {
-			if (str_starts_with($this->lastmessage, $symbol)) {
+            if (strpos($this->lastmessage, $symbol) === 0) {
 				$this->lastmessage = trim(substr($this->lastmessage, strlen($symbol)));
 				$commandsymbol = $symbol;
                 break;
@@ -348,10 +348,10 @@ class Twitch
 	protected function parseChannel(string $data): ?string
 	{
 		$arr = explode(' ', substr($data, strpos($data, '#')));
-		if (str_starts_with($arr[0], "#")) return substr($arr[0], 1);
+        if (strpos($arr[0], "#") === 0) return substr($arr[0], 1);
         return null;
 	}
-	
+
 	/*
 	* This function can double as an event listener
 	*/
