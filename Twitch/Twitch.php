@@ -56,7 +56,7 @@ class Twitch
     private bool $closing = false;
     private int $logLevel;
 
-    function __construct(array $options = [])
+    public function __construct(array $options = [])
 	{
 		if (php_sapi_name() !== 'cli') trigger_error('TwitchPHP will not run on a webserver. Please use PHP CLI to run a TwitchPHP self-bot.', E_USER_ERROR);
 		
