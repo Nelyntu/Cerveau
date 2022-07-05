@@ -197,10 +197,10 @@ class Twitch
         $this->connector->connect("$url:$port")->then(
             function (ConnectionInterface $connection) {
                 $this->connection = $connection;
-                $this->initIRC($this->connection);
+                $this->initIRC();
 
-                $connection->on('data', function($data) use ($connection) {
-                    $this->process($data, $this->connection);
+                $connection->on('data', function($data) {
+                    $this->process($data);
                 });
                 $connection->on('close', function () {
                     $this->emit('[CLOSE]');
@@ -213,27 +213,27 @@ class Twitch
         );
 	}
 
-    protected function initIRC(ConnectionInterface $connection): void
+    protected function initIRC(): void
 	{
 		if ($this->verbose) $this->emit('[INIT IRC]');
-		$connection->write("PASS " . $this->secret . "\n");
-		$connection->write("NICK " . $this->nick . "\n");
-		$connection->write("CAP REQ :twitch.tv/membership\n");
+		$this->connection->write("PASS " . $this->secret . "\n");
+		$this->connection->write("NICK " . $this->nick . "\n");
+		$this->connection->write("CAP REQ :twitch.tv/membership\n");
 		foreach ($this->channels as $channel) $this->joinChannel($channel);
 	}
 
-	protected function pingPong(string $data, ConnectionInterface $connection): void
+	protected function pingPong(string $data): void
 	{
 		if ($this->debug) $this->emit("[DEBUG] [" . date('h:i:s') . "] PING :tmi.twitch.tv");
-		$connection->write("PONG :tmi.twitch.tv\n");
+		$this->connection->write("PONG :tmi.twitch.tv\n");
 		if ($this->debug) $this->emit("[DEBUG] [" . date('h:i:s') . "] PONG :tmi.twitch.tv");
 	}
 	
-	protected function process(string $data, ConnectionInterface $connection): void
+	protected function process(string $data): void
 	{
 		if ($this->debug) $this->emit("[DEBUG] [DATA] " . $data);
 		if (trim($data) == "PING :tmi.twitch.tv") {
-			$this->pingPong($data, $connection);
+			$this->pingPong($data);
 			return;
 		}
 		if (preg_match('/PRIVMSG/', $data)) {
