@@ -9,38 +9,46 @@
 namespace Twitch;
 
 use React\EventLoop\Factory;
+use React\EventLoop\LoopInterface;
 use React\Socket\ConnectionInterface;
 use React\Socket\Connector;
 
 class Twitch
 {
-	protected $loop;
-	protected $commands;
-	
-	private $verbose;
+	protected LoopInterface $loop;
+	protected Commands $commands;
+
+	private bool $verbose;
 //	private $socket_options;
-	private $debug;
+	private bool $debug;
 	
-	private $secret;
-	private $nick;
+	private string $secret;
+	private string $nick;
+    /** @var string[] */
 	private $channels;
+    /** @var string[] */
 	private $commandsymbol;
-	private $badwords;
-	
+    /** @var string[] */
+	private array $badwords;
+    /** @var string[] */
 	private $whitelist;
-	private $responses;
-	private $functions;
-	private $restricted_functions;
-	private $private_functions;
+    /** @var string[] */
+	private array $responses;
+    /** @var string[] */
+	private array $functions;
+    /** @var string[] */
+	private array $restricted_functions;
+    /** @var string[] */
+	private array $private_functions;
 	
-	protected $connector;
-	protected $connection;
-	protected $running;
+	protected Connector $connector;
+	protected ?ConnectionInterface $connection = null;
+	protected bool $running = false;
 	
-	private $reallastuser;
-	private $reallastchannel;
-	private $lastmessage;
-	private $lastuser; //Used a command
+	private ?string $reallastuser = null;
+	private ?string $reallastchannel = null;
+	private ?string $lastmessage = null;
+	private ?string $lastuser = null; //Used a command
 //	private $lastchannel; //Where command was used
     private bool $closing = false;
 
