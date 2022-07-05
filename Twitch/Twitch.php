@@ -8,7 +8,7 @@
 
 namespace Twitch;
 
-use React\EventLoop\Factory;
+use React\EventLoop\Loop;
 use React\EventLoop\LoopInterface;
 use React\Socket\ConnectionInterface;
 use React\Socket\Connector;
@@ -170,7 +170,7 @@ class Twitch
 		if (!$options['secret']) trigger_error('TwitchPHP requires a client secret to connect. Get your Chat OAuth Password here => https://twitchapps.com/tmi/', E_USER_ERROR);
 		if (!$options['nick']) trigger_error('TwitchPHP requires a client username to connect. This should be the same username you use to log in.', E_USER_ERROR);
 		$options['nick'] = strtolower($options['nick']);
-		$options['loop'] = $options['loop'] ?? Factory::create();
+		$options['loop'] = $options['loop'] ?? Loop::get();
 		$options['symbol'] = $options['symbol'] ?? '!';
 		$options['responses'] = $options['responses'] ?? array();
 		$options['functions'] = $options['functions'] ?? array();
