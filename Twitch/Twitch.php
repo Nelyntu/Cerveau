@@ -237,7 +237,7 @@ class Twitch
 	
 	protected function process(string $data): void
 	{
-        $this->emit("[DEBUG] [DATA] " . $data, self::LOG_DEBUG);
+        $this->emit('[DEBUG] [DATA] `' . $data . '`', self::LOG_DEBUG);
         if (trim($data) === "PING :tmi.twitch.tv") {
 			$this->pingPong($data);
 			return;
@@ -272,7 +272,6 @@ class Twitch
 		$this->reallastchannel = $this->parseChannel($data);
 		$this->lastmessage = trim(substr($data, strpos($data, 'PRIVMSG')+11+strlen($this->reallastchannel)));
 
-        $this->emit('[DEBUG] [DATA] `' . $data . '`', self::LOG_DEBUG);
         $this->emit("[DEBUG] [LASTMESSAGE] '" . $this->lastmessage . "'", self::LOG_DEBUG);
 
         $this->emit('[PRIVMSG] (#' . $this->reallastchannel . ') ' . $this->reallastuser . ': ' . $this->lastmessage, self::LOG_INFO);
