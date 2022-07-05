@@ -51,35 +51,16 @@ class Commands
                 $commands .= '[Command Prefix] ' . implode(', ', $commandSymbols) . " ";
             }
 
-            if($responses || $functions) {
-				$commands .= '[Public] ';
-				if($responses) {
-					foreach($responses as $command => $value) {
-						$commands .= "$command, ";
-					}
-
-				}
-				if($responses) {
-					foreach($functions as $command) {
-						$commands .= "$command, ";
-					}
-				}
-				$commands = substr($commands, 0, -2) . " ";
-			}
-			if($restrictedFunctions) {
-				$commands .= '[Whitelisted] ';
-				foreach($restrictedFunctions as $command) {
-					$commands .= "$command, ";
-				}
-				$commands = substr($commands, 0, -2) . " ";
-			}
-			if ($privateFunctions) {
-				$commands .= '[Private] ';
-				foreach($privateFunctions as $command) {
-					$commands .= "$command, ";
-				}
-				$commands = substr($commands, 0, -2) . " ";
-			}
+            $publicCommands = array_merge(array_keys($responses), $functions);
+            if (!empty($publicCommands)) {
+                $commands .= '[Public] ' . implode(', ', $publicCommands) . ' ';
+            }
+            if (!empty($restrictedFunctions)) {
+                $commands .= '[Whitelisted] ' . implode(', ', $restrictedFunctions) . ' ';
+            }
+            if (!empty($privateFunctions)) {
+                $commands .= '[Private] ' . implode(', ', $privateFunctions) . ' ';
+            }
 
 			$this->twitch->emit("[COMMANDS] `$commands`", Twitch::LOG_INFO);
 			return $commands;
