@@ -242,7 +242,7 @@ class Twitch
 			$this->pingPong($data);
 			return;
 		}
-		if (preg_match('/PRIVMSG/', $data)) {
+        if (false !== strpos($data, 'PRIVMSG')) {
 			$response = $this->parseMessage($data);
 			if ($response) {
 				if (!empty($this->badwords) && $this->badwordsCheck($response)) {
@@ -287,7 +287,7 @@ class Twitch
 			if (str_starts_with($this->lastmessage, $symbol)) {
 				$this->lastmessage = trim(substr($this->lastmessage, strlen($symbol)));
 				$commandsymbol = $symbol;
-				break 1;
+                break;
 			}
 		}
 		if ($commandsymbol) {
@@ -332,7 +332,7 @@ class Twitch
 	
 	protected function parseUser(string $data): ?string
 	{
-		if (substr($data, 0, 1) == ":") {
+        if (strpos($data, ":") === 0) {
 			$tmp = explode('!', $data);
 			$user = substr($tmp[0], 1);
 		}
