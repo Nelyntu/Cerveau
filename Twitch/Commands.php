@@ -125,7 +125,7 @@ class Commands
 			for ($i=2; $i<count($args); $i++) {
 				$reason .= $args[$i] . ' ';
 			}
-			$this->twitch->emit('[SO] ' . $args[1] . " $reason", Twitch::LOG_INFO);
+			$this->twitch->emit('[BAN] ' . $args[1] . " $reason", Twitch::LOG_INFO);
 			$this->twitch->ban($args[1], trim($reason)); //ban with optional reason
 		}
 
