@@ -125,13 +125,13 @@ class Twitch
 	public function joinChannel(string $string = ""): void
 	{
 		if ($this->verbose) $this->emit('[VERBOSE] [JOIN CHANNEL] `' . $string . '`');	
-		if (isset($this->connection)){
-			if ($string) {
-				$string = strtolower($string);
-				$this->connection->write("JOIN #" . $string . "\n");
-				if (!in_array($string, $this->channels)) $this->channels[] = $string;
-			}
-		}
+		if (!isset($this->connection) || !$string) {
+            return;
+        }
+
+        $string = strtolower($string);
+        $this->connection->write("JOIN #" . $string . "\n");
+        if (!in_array($string, $this->channels)) $this->channels[] = $string;
 	}
 	
 	/*
@@ -188,29 +188,32 @@ class Twitch
 		$url = 'irc.chat.twitch.tv';
 		$port = '6667';
 		if ($this->verbose) $this->emit("[CONNECT] $url:$port");
-		
-		if(!$this->connection) {
-//			$twitch = $this;
-			$this->connector->connect("$url:$port")->then(
-				function (ConnectionInterface $connection) {
-                    $this->connection = $connection;
-                    $this->initIRC($this->connection);
-					
-					$connection->on('data', function($data) use ($connection) {
-                        $this->process($data, $this->connection);
-					});
-					$connection->on('close', function () {
-                        $this->emit('[CLOSE]');
-					});
-                    $this->emit('[CONNECTED]');
-				},
-				function (\Exception $exception) {
-                    $this->emit('[ERROR] ' . $exception->getMessage());
-				}
-			);
-		} else $this->emit('[SYMANTICS ERROR] A connection already exists!');
+
+        if ($this->connection) {
+            $this->emit('[SYMANTICS ERROR] A connection already exists!');
+            return;
+        }
+
+        $this->connector->connect("$url:$port")->then(
+            function (ConnectionInterface $connection) {
+                $this->connection = $connection;
+                $this->initIRC($this->connection);
+
+                $connection->on('data', function($data) use ($connection) {
+                    $this->process($data, $this->connection);
+                });
+                $connection->on('close', function () {
+                    $this->emit('[CLOSE]');
+                });
+                $this->emit('[CONNECTED]');
+            },
+            function (\Exception $exception) {
+                $this->emit('[ERROR] ' . $exception->getMessage());
+            }
+        );
 	}
-	protected function initIRC(ConnectionInterface $connection): void
+
+    protected function initIRC(ConnectionInterface $connection): void
 	{
 		if ($this->verbose) $this->emit('[INIT IRC]');
 		$connection->write("PASS " . $this->secret . "\n");
