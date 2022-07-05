@@ -19,6 +19,12 @@ class Twitch
     public const LOG_NOTICE = 1;
     public const LOG_INFO = 2;
     public const LOG_DEBUG = 3;
+    private const LOG_LEVEL_LABELS = [
+        self::LOG_ERROR => 'ERROR',
+        self::LOG_NOTICE => 'NOTICE',
+        self::LOG_INFO => 'INFO',
+        self::LOG_DEBUG => 'DEBUG',
+    ];
 
 	protected LoopInterface $loop;
 	protected Commands $commands;
@@ -230,14 +236,14 @@ class Twitch
 
 	protected function pingPong(string $data): void
 	{
-        $this->emit("[DEBUG] [" . date('h:i:s') . "] PING :tmi.twitch.tv", self::LOG_DEBUG);
+        $this->emit("PING :tmi.twitch.tv", self::LOG_DEBUG);
 		$this->connection->write("PONG :tmi.twitch.tv\n");
-        $this->emit("[DEBUG] [" . date('h:i:s') . "] PONG :tmi.twitch.tv", self::LOG_DEBUG);
+        $this->emit("PONG :tmi.twitch.tv", self::LOG_DEBUG);
 	}
 	
 	protected function process(string $data): void
 	{
-        $this->emit('[DEBUG] [DATA] `' . $data . '`', self::LOG_DEBUG);
+        $this->emit('DATA' . $data . '`', self::LOG_DEBUG);
         if (trim($data) === "PING :tmi.twitch.tv") {
 			$this->pingPong($data);
 			return;
@@ -359,7 +365,7 @@ class Twitch
         if ($level > $this->logLevel) {
             return;
         }
-        echo "[EMIT] $string" . PHP_EOL;
+        echo "[EMIT][".date('H:i:s')."][".self::LOG_LEVEL_LABELS[$level]."] ". $string . PHP_EOL;
 	}
 	
 	public function getChannels(): array
