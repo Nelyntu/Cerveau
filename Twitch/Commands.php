@@ -52,7 +52,7 @@ class Commands
 				foreach($commandSymbol as $symbol) {
 					$commands .= "$symbol, ";
 				}
-				$commands = substr($commands, 0, strlen($commands)-2) . " ";
+				$commands = substr($commands, 0, -2) . " ";
 			}
 			if($responses || $functions) {
 				$commands .= '[Public] ';
@@ -67,21 +67,21 @@ class Commands
 						$commands .= "$command, ";
 					}
 				}
-				$commands = substr($commands, 0, strlen($commands)-2) . " ";
+				$commands = substr($commands, 0, -2) . " ";
 			}
 			if($restricted_functions) {
 				$commands .= '[Whitelisted] ';
 				foreach($restricted_functions as $command) {
 					$commands .= "$command, ";
 				}
-				$commands = substr($commands, 0, strlen($commands)-2) . " ";
+				$commands = substr($commands, 0, -2) . " ";
 			}
 			if ($private_functions) {
 				$commands .= '[Private] ';
 				foreach($private_functions as $command) {
 					$commands .= "$command, ";
 				}
-				$commands = substr($commands, 0, strlen($commands)-2) . " ";
+				$commands = substr($commands, 0, -2) . " ";
 			}
 
 			$this->twitch->emit("[COMMANDS] `$commands`", Twitch::LOG_INFO);
