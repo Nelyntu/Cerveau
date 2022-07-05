@@ -38,7 +38,7 @@ class Commands
 		unset($i);
 		}
 
-		if ($command == 'help')
+		if ($command === 'help')
 		{
 			$commandSymbol = $this->twitch->getCommandSymbol();
 			$responses = $this->twitch->getResponses();
@@ -88,39 +88,39 @@ class Commands
 			return $commands;
 		}
 
-		if ($command == 'php')
+		if ($command === 'php')
 		{
 			$this->twitch->emit('[PHP]', Twitch::LOG_INFO);
 			$response = 'Current PHP version: ' . phpversion();
 		}
 
-		if ($command == 'stop')
+		if ($command === 'stop')
 		{
 			$this->twitch->emit('[STOP]', Twitch::LOG_INFO);
 			$this->twitch->close();
 		}
 
-		if ($command == 'join')
+		if ($command === 'join')
 		{
 			$this->twitch->emit('[JOIN]' . $args[1], Twitch::LOG_INFO);
 			if (!$args[1]) return null;
 			$this->twitch->joinChannel($args[1]);
 		}
 
-		if ($command == 'leave')
+		if ($command === 'leave')
 		{
 			$this->twitch->emit('[PART]', Twitch::LOG_INFO);
 			$this->twitch->leaveChannel();
 		}
 
-		if ($command == 'so')
+		if ($command === 'so')
 		{
 			$this->twitch->emit('[SO] ' . $args[1], Twitch::LOG_INFO);
 			if (!$args[1]) return null;
 			$this->twitch->sendMessage('Hey, go check out ' . $args[1] . ' at https://www.twitch.tv/' . $args[1] . ' They are good peoples! Pretty good. Pretty good!');
 		}
 
-		if ($command == 'ban') {
+        if ($command === 'ban') {
 			$reason = '';
 			for ($i=2; $i<count($args); $i++) {
 				$reason .= $args[$i] . ' ';
