@@ -14,28 +14,22 @@ namespace Twitch;
 class Commands
 {
 	protected Twitch $twitch;
-	protected bool $verbose;
-	protected bool $debug;
+	protected int $logLevel;
 
-	public function __construct(Twitch $twitch, ?bool $verbose = false, ?bool $debug = false)
+	public function __construct(Twitch $twitch, int $logLevel)
 	{
 		$this->twitch = $twitch;
-		$this->verbose = $verbose;
-		$this->debug = $debug;
+		$this->logLevel = $logLevel;
 	}
 
     public function handle(string $command, ?array $args = []): ?string
 	{
         $response = null;
 
-		if ($this->verbose) {
-			$this->twitch->emit("[HANDLE COMMAND] `$command`");
-			echo '[ARGS] ';
-			var_dump($args);
-			echo PHP_EOL;
-		}
+        $this->twitch->emit("[HANDLE COMMAND] `$command`", Twitch::LOG_INFO);
+        $this->twitch->emit("[ARGS] ".print_r($args, true), Twitch::LOG_INFO);
 
-		if($this->debug) {
+		if($this->logLevel === Twitch::LOG_DEBUG) {
 		$i = 0;
 		foreach ($args as $arg) {
 			$args[$i] = preg_replace('/[^A-Za-z0-9\-]/', '', trim($arg));
@@ -90,38 +84,38 @@ class Commands
 				$commands = substr($commands, 0, strlen($commands)-2) . " ";
 			}
 
-			if ($this->verbose) $this->twitch->emit("[COMMANDS] `$commands`");
+			$this->twitch->emit("[COMMANDS] `$commands`", Twitch::LOG_INFO);
 			return $commands;
 		}
 
 		if ($command == 'php')
 		{
-			if ($this->verbose) $this->twitch->emit('[PHP]');
+			$this->twitch->emit('[PHP]', Twitch::LOG_INFO);
 			$response = 'Current PHP version: ' . phpversion();
 		}
 
 		if ($command == 'stop')
 		{
-			if ($this->verbose) $this->twitch->emit('[STOP]');
+			$this->twitch->emit('[STOP]', Twitch::LOG_INFO);
 			$this->twitch->close();
 		}
 
 		if ($command == 'join')
 		{
-			if ($this->verbose) $this->twitch->emit('[JOIN]' . $args[1]);
+			$this->twitch->emit('[JOIN]' . $args[1], Twitch::LOG_INFO);
 			if (!$args[1]) return null;
 			$this->twitch->joinChannel($args[1]);
 		}
 
 		if ($command == 'leave')
 		{
-			if ($this->verbose) $this->twitch->emit('[PART]');
+			$this->twitch->emit('[PART]', Twitch::LOG_INFO);
 			$this->twitch->leaveChannel();
 		}
 
 		if ($command == 'so')
 		{
-			if ($this->verbose) $this->twitch->emit('[SO] ' . $args[1]);
+			$this->twitch->emit('[SO] ' . $args[1], Twitch::LOG_INFO);
 			if (!$args[1]) return null;
 			$this->twitch->sendMessage('Hey, go check out ' . $args[1] . ' at https://www.twitch.tv/' . $args[1] . ' They are good peoples! Pretty good. Pretty good!');
 		}
@@ -131,7 +125,7 @@ class Commands
 			for ($i=2; $i<count($args); $i++) {
 				$reason .= $args[$i] . ' ';
 			}
-			if ($this->verbose) $this->twitch->emit('[SO] ' . $args[1] . " $reason");
+			$this->twitch->emit('[SO] ' . $args[1] . " $reason", Twitch::LOG_INFO);
 			$this->twitch->ban($args[1], trim($reason)); //ban with optional reason
 		}
 

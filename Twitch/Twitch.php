@@ -15,12 +15,15 @@ use React\Socket\Connector;
 
 class Twitch
 {
+    public const LOG_ERROR = -1;
+    public const LOG_NOTICE = 1;
+    public const LOG_INFO = 2;
+    public const LOG_DEBUG = 3;
+
 	protected LoopInterface $loop;
 	protected Commands $commands;
 
-	private bool $verbose;
 //	private $socket_options;
-	private bool $debug;
 	
 	private string $secret;
 	private string $nick;
@@ -51,6 +54,7 @@ class Twitch
 	private ?string $lastuser = null; //Used a command
 //	private $lastchannel; //Where command was used
     private bool $closing = false;
+    private int $logLevel;
 
     function __construct(array $options = [])
 	{
@@ -70,31 +74,31 @@ class Twitch
 		$this->functions = $options['functions'] ?? array();
 		$this->restricted_functions	= $options['restricted_functions'] ?? array();
 		$this->private_functions = $options['private_functions'] ?? array();
-		
-		$this->verbose = $options['verbose'];
+
 //		$this->socket_options = $options['socket_options'];
-		$this->debug = $options['debug'] ?? false;
+
+        $this->logLevel = $options['logLevel'];
 
 		$this->connector = new Connector($this->loop, $options['socket_options']);
 
 		if (is_array($options['badwords'])) $this->badwords = $options['badwords'];
-		$this->commands = $options['commands'] ?? new Commands($this, $this->verbose, $this->debug);
+		$this->commands = $options['commands'] ?? new Commands($this, $this->logLevel);
 	}
 	
 	public function run(bool $runLoop = true): void
 	{
-		if ($this->verbose) $this->emit('[RUN]');
+		$this->emit('[RUN]', Twitch::LOG_INFO);
 		if (!$this->running) {
 			$this->running = true;
 			$this->connect();
 		}
-		if ($this->verbose) $this->emit('[LOOP->RUN]');
+		$this->emit('[LOOP->RUN]', Twitch::LOG_INFO);
 		if ($runLoop) $this->loop->run();
 	}
 	
 	public function close(bool $closeLoop = true): void
 	{
-		if ($this->verbose) $this->emit('[CLOSE]');
+		$this->emit('[CLOSE]', Twitch::LOG_INFO);
 		if ($this->running) {
 			$this->running = false;
 			foreach ($this->channels as $channel) $this->leaveChannel($channel);
@@ -102,8 +106,8 @@ class Twitch
 		if ($closeLoop) {
 			if(!$this->closing) {
 				$this->closing = true;
-				if ($this->verbose) $this->emit('[LOOP->STOP]');
-//				$twitch = $this;
+				$this->emit('[LOOP->STOP]', Twitch::LOG_INFO);
+
 				$this->loop->addTimer(3, function () {
                     $this->closing = false;
                     $this->loop->stop();
@@ -114,17 +118,19 @@ class Twitch
 	
 	public function sendMessage(string $data, ?string $channel = null): void
 	{
-		if (isset($this->connection)) {
-			$this->connection->write("PRIVMSG #" . ($channel ?? $this->reallastchannel ?? current($this->channels)) . " :" . $data . "\n");
-			$this->emit('[REPLY] #' . ($channel ?? $this->reallastchannel ?? current($this->channels)) . ' - ' . $data);
-			// if ($channel)
-            $this->reallastchannel = $channel ?? $this->reallastchannel ?? current($this->channels);
-		}
+		if (!isset($this->connection)) {
+            return;
+        }
+
+        $this->connection->write("PRIVMSG #" . ($channel ?? $this->reallastchannel ?? current($this->channels)) . " :" . $data . "\n");
+        $this->emit('[REPLY] #' . ($channel ?? $this->reallastchannel ?? current($this->channels)) . ' - ' . $data, Twitch::LOG_NOTICE);
+        // if ($channel)
+        $this->reallastchannel = $channel ?? $this->reallastchannel ?? current($this->channels);
 	}
 	
 	public function joinChannel(string $string = ""): void
 	{
-		if ($this->verbose) $this->emit('[VERBOSE] [JOIN CHANNEL] `' . $string . '`');	
+		$this->emit('[VERBOSE] [JOIN CHANNEL] `' . $string . '`', Twitch::LOG_INFO);
 		if (!isset($this->connection) || !$string) {
             return;
         }
@@ -141,7 +147,7 @@ class Twitch
 	*/
 	public function leaveChannel(?string $string = ""): void
 	{
-		if ($this->verbose) $this->emit('[VERBOSE] [LEAVE CHANNEL] `' . $string . '`');
+		$this->emit('[VERBOSE] [LEAVE CHANNEL] `' . $string . '`', Twitch::LOG_INFO);
 		if (isset($this->connection)) {
 			$string = strtolower($string ?? $this->reallastchannel);
 			$this->connection->write("PART #" . ($string ?? $this->reallastchannel) . "\n");
@@ -154,7 +160,7 @@ class Twitch
 	
 	public function ban($username, $reason = ''): bool
 	{
-		if ($this->verbose) $this->emit('[BAN] ' . $username . ' - ' . $reason);
+		$this->emit('[BAN] ' . $username . ' - ' . $reason, Twitch::LOG_INFO);
 		if ( ($username != $this->nick) && (!in_array($username, $this->channels)) ) {
 			$this->connection->write("/ban $username $reason");
 			return true;
@@ -187,10 +193,10 @@ class Twitch
 	{
 		$url = 'irc.chat.twitch.tv';
 		$port = '6667';
-		if ($this->verbose) $this->emit("[CONNECT] $url:$port");
+		$this->emit("[CONNECT] $url:$port", Twitch::LOG_INFO);
 
         if ($this->connection) {
-            $this->emit('[SYMANTICS ERROR] A connection already exists!');
+            $this->emit('[SYMANTICS ERROR] A connection already exists!', Twitch::LOG_ERROR);
             return;
         }
 
@@ -205,17 +211,17 @@ class Twitch
                 $connection->on('close', function () {
                     $this->emit('[CLOSE]');
                 });
-                $this->emit('[CONNECTED]');
+                $this->emit('[CONNECTED]', Twitch::LOG_NOTICE);
             },
             function (\Exception $exception) {
-                $this->emit('[ERROR] ' . $exception->getMessage());
+                $this->emit('[ERROR] ' . $exception->getMessage(), Twitch::LOG_ERROR);
             }
         );
 	}
 
     protected function initIRC(): void
 	{
-		if ($this->verbose) $this->emit('[INIT IRC]');
+		$this->emit('[INIT IRC]', Twitch::LOG_INFO);
 		$this->connection->write("PASS " . $this->secret . "\n");
 		$this->connection->write("NICK " . $this->nick . "\n");
 		$this->connection->write("CAP REQ :twitch.tv/membership\n");
@@ -224,14 +230,14 @@ class Twitch
 
 	protected function pingPong(string $data): void
 	{
-		if ($this->debug) $this->emit("[DEBUG] [" . date('h:i:s') . "] PING :tmi.twitch.tv");
+		$this->emit("[DEBUG] [" . date('h:i:s') . "] PING :tmi.twitch.tv", Twitch::LOG_DEBUG);
 		$this->connection->write("PONG :tmi.twitch.tv\n");
-		if ($this->debug) $this->emit("[DEBUG] [" . date('h:i:s') . "] PONG :tmi.twitch.tv");
+		$this->emit("[DEBUG] [" . date('h:i:s') . "] PONG :tmi.twitch.tv", Twitch::LOG_DEBUG);
 	}
 	
 	protected function process(string $data): void
 	{
-		if ($this->debug) $this->emit("[DEBUG] [DATA] " . $data);
+		$this->emit("[DEBUG] [DATA] " . $data, Twitch::LOG_DEBUG);
 		if (trim($data) == "PING :tmi.twitch.tv") {
 			$this->pingPong($data);
 			return;
@@ -250,10 +256,10 @@ class Twitch
 	
 	protected function badwordsCheck($message): bool
 	{
-		if ($this->debug) $this->emit('[BADWORD CHECK] ' . $message);
+		$this->emit('[BADWORD CHECK] ' . $message, Twitch::LOG_DEBUG);
 		foreach ($this->badwords as $badword) {
 			if (str_contains($message, $badword)) {
-				if ($this->verbose) $this->emit('[BADWORD] ' . $badword);
+				$this->emit('[BADWORD] ' . $badword, Twitch::LOG_INFO);
 				return true;
 			}
 		}
@@ -265,12 +271,11 @@ class Twitch
 		$this->reallastuser = $this->parseUser($data);
 		$this->reallastchannel = $this->parseChannel($data);
 		$this->lastmessage = trim(substr($data, strpos($data, 'PRIVMSG')+11+strlen($this->reallastchannel)));
-		
-		if ($this->debug){
-			$this->emit('[DEBUG] [DATA] `' . $data . '`');
-			$this->emit("[DEBUG] [LASTMESSAGE] '" . $this->lastmessage . "'");
-		}
-		if ($this->verbose) $this->emit('[PRIVMSG] (#' . $this->reallastchannel . ') ' . $this->reallastuser . ': ' . $this->lastmessage);
+
+        $this->emit('[DEBUG] [DATA] `' . $data . '`', Twitch::LOG_DEBUG);
+        $this->emit("[DEBUG] [LASTMESSAGE] '" . $this->lastmessage . "'", Twitch::LOG_DEBUG);
+
+		$this->emit('[PRIVMSG] (#' . $this->reallastchannel . ') ' . $this->reallastuser . ': ' . $this->lastmessage, Twitch::LOG_INFO);
 		
 		if (!empty($this->badwords) && $this->badwordsCheck($this->lastmessage)) {
 			$this->ban($this->reallastuser);
@@ -288,21 +293,21 @@ class Twitch
 		if ($commandsymbol) {
 			$dataArr = explode(' ', $this->lastmessage);
 			$command = strtolower(trim($dataArr[0]));
-			if ($this->verbose) $this->emit("[COMMAND] `$command`"); 
+			$this->emit("[COMMAND] `$command`", Twitch::LOG_INFO);
 			$this->lastuser = $this->reallastuser;
-//			$this->lastchannel = $this->reallastchannel;
+			$this->lastchannel = $this->reallastchannel;
 //			$this->lastchannel = null;
 			
 			//Public commands
 			if (in_array($command, $this->functions)) {
-				if ($this->verbose) $this->emit('[FUNCTION]');
+				$this->emit('[FUNCTION]', Twitch::LOG_INFO);
 				$response = $this->commands->handle($command, $dataArr);
 			}
 			
 			//Whitelisted commands
 			if ( in_array($this->lastuser, $this->whitelist) || ($this->lastuser == $this->nick) ) {
 				if (in_array($command, $this->restricted_functions)) {
-					if ($this->verbose) $this->emit('[RESTRICTED FUNCTION]');
+					$this->emit('[RESTRICTED FUNCTION]', Twitch::LOG_INFO);
 					$response = $this->commands->handle($command, $dataArr);
 				}
 			}
@@ -310,14 +315,14 @@ class Twitch
 			//Bot owner commands (shares the same username)
 			if ($this->lastuser == $this->nick) {
 				if (in_array($command, $this->private_functions)) {
-					if ($this->verbose) $this->emit('[PRIVATE FUNCTION]');
+					$this->emit('[PRIVATE FUNCTION]', Twitch::LOG_INFO);
 					$response = $this->commands->handle($command, $dataArr);
 				}
 			}
 			
 			//Reply with a preset message
 			if (isset($this->responses[$command])) {
-				if ($this->verbose) $this->emit('[RESPONSE]');
+				$this->emit('[RESPONSE]', Twitch::LOG_INFO);
 				$response = $this->responses[$command];
 			}
 			
@@ -350,9 +355,12 @@ class Twitch
 	/*
 	* This function can double as an event listener
 	*/
-	public function emit(string $string): void
+	public function emit(string $string, $level): void
 	{
-		echo "[EMIT] $string" . PHP_EOL;
+        if ($level > $this->logLevel) {
+            return;
+        }
+        echo "[EMIT] $string" . PHP_EOL;
 	}
 	
 	public function getChannels(): array
