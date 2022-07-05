@@ -36,7 +36,7 @@ class Twitch
     /** @var string[] */
 	private $channels;
     /** @var string[] */
-	private $commandsymbol;
+    private $commandSymbols;
     /** @var string[] */
 	private array $badwords;
     /** @var string[] */
@@ -46,9 +46,9 @@ class Twitch
     /** @var string[] */
 	private array $functions;
     /** @var string[] */
-	private array $restricted_functions;
+    private array $restrictedFunctions;
     /** @var string[] */
-	private array $private_functions;
+    private array $privateFunctions;
 	
 	protected Connector $connector;
 	protected ?ConnectionInterface $connection = null;
@@ -73,13 +73,13 @@ class Twitch
 		$this->nick = $options['nick'];
 		foreach($options['channels'] as $channel) $this->channels[] = strtolower($channel);
 		if(is_null($this->channels)) $this->channels = array($options['nick']);
-		$this->commandsymbol = $options['commandsymbol'] ?? array('!');
+        $this->commandSymbols = $options['commandsymbol'] ?? array('!');
 		
 		foreach ($options['whitelist'] as $whitelist) $this->whitelist[] = $whitelist;
 		$this->responses = $options['responses'] ?? array();
 		$this->functions = $options['functions'] ?? array();
-		$this->restricted_functions	= $options['restricted_functions'] ?? array();
-		$this->private_functions = $options['private_functions'] ?? array();
+        $this->restrictedFunctions = $options['restricted_functions'] ?? array();
+        $this->privateFunctions = $options['private_functions'] ?? array();
 
 //		$this->socket_options = $options['socket_options'];
 
@@ -286,15 +286,15 @@ class Twitch
 		}
 		
 		$response = '';
-		$commandsymbol = '';
-		foreach($this->commandsymbol as $symbol) {
+		$commandSymbol = '';
+        foreach($this->commandSymbols as $symbol) {
             if (strpos($this->lastmessage, $symbol) === 0) {
 				$this->lastmessage = trim(substr($this->lastmessage, strlen($symbol)));
-				$commandsymbol = $symbol;
+                $commandSymbol = $symbol;
                 break;
 			}
 		}
-		if ($commandsymbol) {
+        if ($commandSymbol) {
 			$dataArr = explode(' ', $this->lastmessage);
 			$command = strtolower(trim($dataArr[0]));
             $this->emit("[COMMAND] `$command`", self::LOG_INFO);
@@ -310,7 +310,7 @@ class Twitch
 			
 			//Whitelisted commands
 			if ( in_array($this->lastuser, $this->whitelist) || ($this->lastuser == $this->nick) ) {
-				if (in_array($command, $this->restricted_functions)) {
+                if (in_array($command, $this->restrictedFunctions, true)) {
                     $this->emit('[RESTRICTED FUNCTION]', self::LOG_INFO);
 					$response = $this->commands->handle($command, $dataArr);
 				}
@@ -318,7 +318,7 @@ class Twitch
 			
 			//Bot owner commands (shares the same username)
 			if ($this->lastuser == $this->nick) {
-				if (in_array($command, $this->private_functions)) {
+                if (in_array($command, $this->privateFunctions, true)) {
                     $this->emit('[PRIVATE FUNCTION]', self::LOG_INFO);
 					$response = $this->commands->handle($command, $dataArr);
 				}
@@ -371,29 +371,29 @@ class Twitch
 	{
 		return $this->channels;
 	}
-	
-	public function getCommandSymbol(): array
-	{
-		return $this->commandsymbol;
-	}
-	
-	public function getResponses(): array
-	{
-		return $this->responses;
-	}
-	
-	public function getFunctions(): array
-	{
-		return $this->functions;
-	}
-	
-	public function getRestrictedFunctions(): array
-	{
-		return $this->restricted_functions;
-	}
-	
-	public function getPrivateFunctions(): array
-	{
-		return $this->private_functions;
-	}
+
+    public function getCommandSymbols(): array
+    {
+        return $this->commandSymbols;
+    }
+
+    public function getResponses(): array
+    {
+        return $this->responses;
+    }
+
+    public function getFunctions(): array
+    {
+        return $this->functions;
+    }
+
+    public function getRestrictedFunctions(): array
+    {
+        return $this->restrictedFunctions;
+    }
+
+    public function getPrivateFunctions(): array
+    {
+        return $this->privateFunctions;
+    }
 }

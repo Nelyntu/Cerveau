@@ -40,21 +40,18 @@ class Commands
 
 		if ($command === 'help')
 		{
-			$commandSymbol = $this->twitch->getCommandSymbol();
+            $commandSymbols = $this->twitch->getCommandSymbols();
 			$responses = $this->twitch->getResponses();
 			$functions = $this->twitch->getFunctions();
-			$restricted_functions = $this->twitch->getRestrictedFunctions();
-			$private_functions = $this->twitch->getPrivateFunctions();
+            $restrictedFunctions = $this->twitch->getRestrictedFunctions();
+            $privateFunctions = $this->twitch->getPrivateFunctions();
 
-			$commands = '';
-			if ($commandSymbol) {
-				$commands .= '[Command Prefix] ';
-				foreach($commandSymbol as $symbol) {
-					$commands .= "$symbol, ";
-				}
-				$commands = substr($commands, 0, -2) . " ";
-			}
-			if($responses || $functions) {
+            $commands = '';
+            if ($commandSymbols) {
+                $commands .= '[Command Prefix] ' . implode(', ', $commandSymbols) . " ";
+            }
+
+            if($responses || $functions) {
 				$commands .= '[Public] ';
 				if($responses) {
 					foreach($responses as $command => $value) {
@@ -69,16 +66,16 @@ class Commands
 				}
 				$commands = substr($commands, 0, -2) . " ";
 			}
-			if($restricted_functions) {
+			if($restrictedFunctions) {
 				$commands .= '[Whitelisted] ';
-				foreach($restricted_functions as $command) {
+				foreach($restrictedFunctions as $command) {
 					$commands .= "$command, ";
 				}
 				$commands = substr($commands, 0, -2) . " ";
 			}
-			if ($private_functions) {
+			if ($privateFunctions) {
 				$commands .= '[Private] ';
-				foreach($private_functions as $command) {
+				foreach($privateFunctions as $command) {
 					$commands .= "$command, ";
 				}
 				$commands = substr($commands, 0, -2) . " ";
