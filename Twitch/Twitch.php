@@ -164,16 +164,15 @@ class Twitch
 		}
 	}
 	
-	public function ban($username, $reason = ''): bool
-	{
+    public function ban($username, $reason = ''): void
+    {
         $this->emit('[BAN] ' . $username . ' - ' . $reason, self::LOG_INFO);
-		if ( ($username != $this->nick) && (!in_array($username, $this->channels)) ) {
-			$this->connection->write("/ban $username $reason");
-			return true;
-		}
-		return false;
-	}
-	
+        if ($username === $this->nick || in_array($username, $this->channels, true)) {
+            return;
+        }
+        $this->connection->write("/ban $username $reason");
+    }
+
 	/*
 	* Attempt to catch errors with the user-provided $options early
 	*/
