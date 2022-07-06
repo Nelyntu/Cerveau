@@ -69,7 +69,7 @@ class Commands
 		if ($command === 'php')
 		{
 			$this->twitch->emit('[PHP]', Twitch::LOG_INFO);
-			$response = 'Current PHP version: ' . phpversion();
+			$response = 'Current PHP version: ' . PHP_VERSION;
 		}
 
 		if ($command === 'stop')
