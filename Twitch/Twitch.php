@@ -72,14 +72,14 @@ class Twitch
 		$this->secret = $options['secret'];
 		$this->nick = $options['nick'];
         $this->channels = array_map('strtolower', $options['channels']);
-		if(is_null($this->channels)) $this->channels = array($options['nick']);
-        $this->commandSymbols = $options['commandsymbol'] ?? array('!');
+		if(is_null($this->channels)) $this->channels = [$options['nick']];
+        $this->commandSymbols = $options['commandsymbol'] ?? ['!'];
 
 		$this->whitelist = $options['whitelist'];
-		$this->responses = $options['responses'] ?? array();
-		$this->functions = $options['functions'] ?? array();
-        $this->restrictedFunctions = $options['restricted_functions'] ?? array();
-        $this->privateFunctions = $options['private_functions'] ?? array();
+		$this->responses = $options['responses'] ?? [];
+		$this->functions = $options['functions'] ?? [];
+        $this->restrictedFunctions = $options['restricted_functions'] ?? [];
+        $this->privateFunctions = $options['private_functions'] ?? [];
 
 //		$this->socket_options = $options['socket_options'];
 
@@ -185,12 +185,12 @@ class Twitch
 		$options['nick'] = strtolower($options['nick']);
 		$options['loop'] = $options['loop'] ?? Loop::get();
 		$options['symbol'] = $options['symbol'] ?? '!';
-		$options['responses'] = $options['responses'] ?? array();
-		$options['functions'] = $options['functions'] ?? array();
-		
+		$options['responses'] = $options['responses'] ?? [];
+		$options['functions'] = $options['functions'] ?? [];
+
 		return $options;
 	}
-	
+
 	/*
 	* Connect the bot to Twitch
 	* This command should not be run while the bot is still connected to Twitch

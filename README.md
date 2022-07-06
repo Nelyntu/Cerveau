@@ -58,7 +58,7 @@ TwitchPHP is installed using [Composer](https://getcomposer.org).
 require 'vendor/autoload.php';
 
 require 'secret.php'; //$secret
-$options = array(
+$options = [
 	//Required
 	'secret' => $secret, // Client secret
 	'nick' => 'ValZarGaming', // Twitch username
@@ -106,7 +106,7 @@ $options = array(
 		'stop', //Kills the bot
 		'php', //Outputs the current version of PHP as a message
 	],
-);
+];
 //include 'commands.php';
 //$options['commands'] => $commands; // Import your own Twitch/Commands object to add additional functions
 
