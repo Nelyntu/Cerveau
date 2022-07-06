@@ -160,8 +160,10 @@ class Twitch
 			$string = strtolower($string ?? $this->reallastchannel);
 			$this->connection->write("PART #" . ($string ?? $this->reallastchannel) . "\n");
 			foreach ($this->channels as &$channel) {
-				if ($channel == $string) $channel = null;
-				unset ($channel);
+                if ($channel === $string) {
+                    $channel = null;
+                    unset ($channel);
+                }
 			}
 		}
 	}
@@ -311,7 +313,7 @@ class Twitch
 			}
 			
 			//Whitelisted commands
-            if (in_array($this->lastuser, $this->whitelist, true) || ($this->lastuser == $this->nick)) {
+            if (in_array($this->lastuser, $this->whitelist, true) || $this->lastuser === $this->nick) {
                 if (in_array($command, $this->restrictedFunctions, true)) {
                     $this->emit('[RESTRICTED FUNCTION]', self::LOG_INFO);
 					$response = $this->commands->handle($command, $dataArr);
@@ -319,7 +321,7 @@ class Twitch
 			}
 			
 			//Bot owner commands (shares the same username)
-			if ($this->lastuser == $this->nick) {
+			if ($this->lastuser === $this->nick) {
                 if (in_array($command, $this->privateFunctions, true)) {
                     $this->emit('[PRIVATE FUNCTION]', self::LOG_INFO);
 					$response = $this->commands->handle($command, $dataArr);
