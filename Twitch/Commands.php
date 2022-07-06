@@ -100,7 +100,7 @@ class Commands
 
         if ($command === 'ban') {
 			$reason = '';
-			for ($i=2; $i<count($args); $i++) {
+            for ($i=2, $iMax = count($args); $i< $iMax; $i++) {
 				$reason .= $args[$i] . ' ';
 			}
 			$this->twitch->emit('[BAN] ' . $args[1] . " $reason", Twitch::LOG_INFO);
