@@ -308,7 +308,7 @@ class Twitch
 		}
 		
 		$response = '';
-		$commandSymbol = '';
+		$commandSymbol = null;
         foreach($this->commandSymbols as $symbol) {
             if (strpos($lastmessage, $symbol) === 0) {
                 $lastmessage = trim(substr($lastmessage, strlen($symbol)));
@@ -316,41 +316,44 @@ class Twitch
                 break;
 			}
 		}
-        if ($commandSymbol) {
-            $dataArr = explode(' ', $lastmessage);
-			$command = strtolower(trim($dataArr[0]));
-            $this->emit("[COMMAND] `$command`", self::LOG_INFO);
-            $this->lastuser = $reallastuser;
-			$this->lastchannel = $this->reallastchannel;
-//			$this->lastchannel = null;
-			
-			//Public commands
-            if (in_array($command, $this->functions, true)) {
-                $this->emit('[FUNCTION]', self::LOG_INFO);
-				$response = $this->commands->handle($command, $dataArr);
-			}
-			
-			//Whitelisted commands
-            if (in_array($reallastuser, $this->whitelist, true) || $reallastuser === $this->nick) {
-                if (in_array($command, $this->restrictedFunctions, true)) {
-                    $this->emit('[RESTRICTED FUNCTION]', self::LOG_INFO);
-					$response = $this->commands->handle($command, $dataArr);
-				}
-			}
-			
-			//Bot owner commands (shares the same username)
-            if ($reallastuser === $this->nick && in_array($command, $this->privateFunctions, true)) {
-                $this->emit('[PRIVATE FUNCTION]', self::LOG_INFO);
+
+        if ($commandSymbol === null) {
+            return null;
+        }
+
+        $dataArr = explode(' ', $lastmessage);
+        $command = strtolower(trim($dataArr[0]));
+        $this->emit("[COMMAND] `$command`", self::LOG_INFO);
+        $this->lastuser = $reallastuser;
+        $this->lastchannel = $this->reallastchannel;
+        // $this->lastchannel = null;
+
+        //Public commands
+        if (in_array($command, $this->functions, true)) {
+            $this->emit('[FUNCTION]', self::LOG_INFO);
+            $response = $this->commands->handle($command, $dataArr);
+        }
+
+        //Whitelisted commands
+        if (in_array($reallastuser, $this->whitelist, true) || $reallastuser === $this->nick) {
+            if (in_array($command, $this->restrictedFunctions, true)) {
+                $this->emit('[RESTRICTED FUNCTION]', self::LOG_INFO);
                 $response = $this->commands->handle($command, $dataArr);
             }
-			
-			//Reply with a preset message
-			if (isset($this->responses[$command])) {
-                $this->emit('[RESPONSE]', self::LOG_INFO);
-				$response = $this->responses[$command];
-			}
-			
-		}
+        }
+
+        //Bot owner commands (shares the same username)
+        if ($reallastuser === $this->nick && in_array($command, $this->privateFunctions, true)) {
+            $this->emit('[PRIVATE FUNCTION]', self::LOG_INFO);
+            $response = $this->commands->handle($command, $dataArr);
+        }
+
+        //Reply with a preset message
+        if (isset($this->responses[$command])) {
+            $this->emit('[RESPONSE]', self::LOG_INFO);
+            $response = $this->responses[$command];
+        }
+
 		return $response;
 	}
 	
