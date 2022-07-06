@@ -53,11 +53,8 @@ class Twitch
 	protected Connector $connector;
 	protected ?ConnectionInterface $connection = null;
 	protected bool $running = false;
-	
-	private ?string $reallastuser = null;
-	private ?string $reallastchannel = null;
-	private ?string $lastmessage = null;
-	private ?string $lastuser = null; //Used a command
+    private ?string $reallastchannel = null;
+    private ?string $lastuser = null; //Used a command
 //	private $lastchannel; //Where command was used
     private bool $closing = false;
     private int $logLevel;
@@ -297,32 +294,32 @@ class Twitch
 	
 	protected function parseMessage(string $data): ?string
 	{
-		$this->reallastuser = $this->parseUser($data);
+        $reallastuser = $this->parseUser($data);
 		$this->reallastchannel = $this->parseChannel($data);
-		$this->lastmessage = trim(substr($data, strpos($data, 'PRIVMSG')+11+strlen($this->reallastchannel)));
+        $lastmessage = trim(substr($data, strpos($data, 'PRIVMSG')+11+strlen($this->reallastchannel)));
 
-        $this->emit("[DEBUG] [LASTMESSAGE] '" . $this->lastmessage . "'", self::LOG_DEBUG);
+        $this->emit("[DEBUG] [LASTMESSAGE] '" . $lastmessage . "'", self::LOG_DEBUG);
 
-        $this->emit('[PRIVMSG] (#' . $this->reallastchannel . ') ' . $this->reallastuser . ': ' . $this->lastmessage, self::LOG_INFO);
+        $this->emit('[PRIVMSG] (#' . $this->reallastchannel . ') ' . $reallastuser . ': ' . $lastmessage, self::LOG_INFO);
 		
-		if (!empty($this->badwords) && $this->badwordsCheck($this->lastmessage)) {
-			$this->ban($this->reallastuser);
+        if (!empty($this->badwords) && $this->badwordsCheck($lastmessage)) {
+            $this->ban($reallastuser);
 		}
 		
 		$response = '';
 		$commandSymbol = '';
         foreach($this->commandSymbols as $symbol) {
-            if (strpos($this->lastmessage, $symbol) === 0) {
-				$this->lastmessage = trim(substr($this->lastmessage, strlen($symbol)));
+            if (strpos($lastmessage, $symbol) === 0) {
+                $lastmessage = trim(substr($lastmessage, strlen($symbol)));
                 $commandSymbol = $symbol;
                 break;
 			}
 		}
         if ($commandSymbol) {
-			$dataArr = explode(' ', $this->lastmessage);
+            $dataArr = explode(' ', $lastmessage);
 			$command = strtolower(trim($dataArr[0]));
             $this->emit("[COMMAND] `$command`", self::LOG_INFO);
-			$this->lastuser = $this->reallastuser;
+            $this->lastuser = $reallastuser;
 			$this->lastchannel = $this->reallastchannel;
 //			$this->lastchannel = null;
 			
@@ -333,7 +330,7 @@ class Twitch
 			}
 			
 			//Whitelisted commands
-            if (in_array($this->lastuser, $this->whitelist, true) || $this->lastuser === $this->nick) {
+            if (in_array($reallastuser, $this->whitelist, true) || $reallastuser === $this->nick) {
                 if (in_array($command, $this->restrictedFunctions, true)) {
                     $this->emit('[RESTRICTED FUNCTION]', self::LOG_INFO);
 					$response = $this->commands->handle($command, $dataArr);
@@ -341,7 +338,7 @@ class Twitch
 			}
 			
 			//Bot owner commands (shares the same username)
-            if ($this->lastuser === $this->nick && in_array($command, $this->privateFunctions, true)) {
+            if ($reallastuser === $this->nick && in_array($command, $this->privateFunctions, true)) {
                 $this->emit('[PRIVATE FUNCTION]', self::LOG_INFO);
                 $response = $this->commands->handle($command, $dataArr);
             }
