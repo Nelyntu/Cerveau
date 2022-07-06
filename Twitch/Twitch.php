@@ -257,7 +257,7 @@ class Twitch
         }
 	}
 
-	protected function pingPong(string $data): void
+	protected function pingPong(): void
 	{
         $this->emit("PING :tmi.twitch.tv", self::LOG_DEBUG);
 		$this->connection->write("PONG :tmi.twitch.tv\n");
@@ -268,7 +268,7 @@ class Twitch
 	{
         $this->emit('DATA' . $data . '`', self::LOG_DEBUG);
         if (trim($data) === "PING :tmi.twitch.tv") {
-			$this->pingPong($data);
+			$this->pingPong();
 			return;
 		}
         if (false !== strpos($data, 'PRIVMSG')) {
