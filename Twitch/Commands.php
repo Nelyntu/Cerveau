@@ -8,6 +8,8 @@
 
 namespace Twitch;
 
+use Twitch\Command\CommandInterface;
+
 /**
  * Provides an easy way to have triggerable commands.
  */
@@ -15,6 +17,8 @@ class Commands
 {
 	protected Twitch $twitch;
 	protected int $logLevel;
+    /** @var CommandInterface[] */
+    protected array $commands = [];
 
 	public function __construct(Twitch $twitch, int $logLevel)
 	{
@@ -22,10 +26,13 @@ class Commands
 		$this->logLevel = $logLevel;
 	}
 
-    public function handle(string $command, ?array $args = []): ?string
-	{
-        $response = null;
+    public function addCommand(CommandInterface $command): void
+    {
+        $this->commands[] = $command;
+    }
 
+    public function handle(string $command, ?array $args = []): ?string
+    {
         $this->twitch->emit("[HANDLE COMMAND] `$command`", Twitch::LOG_INFO);
         $this->twitch->emit("[ARGS] ".print_r($args, true), Twitch::LOG_INFO);
 
@@ -38,79 +45,21 @@ class Commands
 		unset($i);
 		}
 
-		if ($command === 'help')
-		{
-            $commandSymbols = $this->twitch->getCommandSymbols();
-			$responses = $this->twitch->getResponses();
-			$functions = $this->twitch->getFunctions();
-            $restrictedFunctions = $this->twitch->getRestrictedFunctions();
-            $privateFunctions = $this->twitch->getPrivateFunctions();
+        $response = null;
+        $found = false;
 
-            $commands = '';
-            if ($commandSymbols) {
-                $commands .= '[Command Prefix] ' . implode(', ', $commandSymbols) . " ";
+        foreach($this->commands as $commandHandler) {
+            if(!$commandHandler->supports($command)) {
+                continue;
             }
+            $found = true;
+            $response = $commandHandler->handle($args);
+        }
 
-            $publicCommands = array_merge(array_keys($responses), $functions);
-            if (!empty($publicCommands)) {
-                $commands .= '[Public] ' . implode(', ', $publicCommands) . ' ';
-            }
-            if (!empty($restrictedFunctions)) {
-                $commands .= '[Whitelisted] ' . implode(', ', $restrictedFunctions) . ' ';
-            }
-            if (!empty($privateFunctions)) {
-                $commands .= '[Private] ' . implode(', ', $privateFunctions) . ' ';
-            }
+        if (!$found) {
+            $this->twitch->emit("[HANDLE COMMAND] `$command` NOT FOUND", Twitch::LOG_INFO);
+        }
 
-			$this->twitch->emit("[COMMANDS] `$commands`", Twitch::LOG_INFO);
-			return $commands;
-		}
-
-		if ($command === 'php')
-		{
-			$this->twitch->emit('[PHP]', Twitch::LOG_INFO);
-			$response = 'Current PHP version: ' . PHP_VERSION;
-		}
-
-		if ($command === 'stop')
-		{
-			$this->twitch->emit('[STOP]', Twitch::LOG_INFO);
-			$this->twitch->close();
-		}
-
-		if ($command === 'join')
-		{
-			$this->twitch->emit('[JOIN]' . $args[1], Twitch::LOG_INFO);
-			if (!$args[1]) {
-                return null;
-            }
-			$this->twitch->joinChannel($args[1]);
-		}
-
-		if ($command === 'leave')
-		{
-			$this->twitch->emit('[PART]', Twitch::LOG_INFO);
-			$this->twitch->leaveChannel();
-		}
-
-		if ($command === 'so')
-		{
-			$this->twitch->emit('[SO] ' . $args[1], Twitch::LOG_INFO);
-            if (!$args[1]) {
-                return null;
-            }
-			$this->twitch->sendMessage('Hey, go check out ' . $args[1] . ' at https://www.twitch.tv/' . $args[1] . ' They are good peoples! Pretty good. Pretty good!');
-		}
-
-        if ($command === 'ban') {
-			$reason = '';
-            for ($i=2, $iMax = count($args); $i< $iMax; $i++) {
-				$reason .= $args[$i] . ' ';
-			}
-			$this->twitch->emit('[BAN] ' . $args[1] . " $reason", Twitch::LOG_INFO);
-			$this->twitch->ban($args[1], trim($reason)); //ban with optional reason
-		}
-
-		return $response;
-	}
+        return $response;
+    }
 }

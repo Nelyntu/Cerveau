@@ -19,4 +19,13 @@ $options['responses']['discord'] = $options['social']['discord'];
 //$options['commands'] => $commands; // Import your own Twitch/Commands object to add additional functions
 
 $twitch = new Twitch\Twitch($options);
+
+$twitch->addCommand(new \Twitch\Command\BanCommand($twitch));
+$twitch->addCommand(new \Twitch\Command\HelpCommand($twitch));
+$twitch->addCommand(new \Twitch\Command\JoinCommand($twitch));
+$twitch->addCommand(new \Twitch\Command\LeaveCommand($twitch));
+$twitch->addCommand(new \Twitch\Command\PhpCommand($twitch));
+$twitch->addCommand(new \Twitch\Command\SoCommand($twitch));
+$twitch->addCommand(new \Twitch\Command\StopCommand($twitch));
+
 $twitch->run();

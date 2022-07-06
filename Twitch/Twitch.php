@@ -12,6 +12,7 @@ use React\EventLoop\Loop;
 use React\EventLoop\LoopInterface;
 use React\Socket\ConnectionInterface;
 use React\Socket\Connector;
+use Twitch\Command\CommandInterface;
 
 class Twitch
 {
@@ -416,5 +417,10 @@ class Twitch
     public function getPrivateFunctions(): array
     {
         return $this->privateFunctions;
+    }
+
+    public function addCommand(CommandInterface $command): void
+    {
+        $this->commands->addCommand($command);
     }
 }
