@@ -64,7 +64,11 @@ class Twitch
 
     public function __construct(array $options = [])
 	{
-		if (PHP_SAPI !== 'cli') trigger_error('TwitchPHP will not run on a webserver. Please use PHP CLI to run a TwitchPHP self-bot.', E_USER_ERROR);
+        if (PHP_SAPI !== 'cli') {
+            trigger_error(
+                'TwitchPHP will not run on a webserver. Please use PHP CLI to run a TwitchPHP self-bot.',
+                E_USER_ERROR);
+        }
 		
 		$options = $this->resolveOptions($options);
 		
@@ -72,7 +76,9 @@ class Twitch
 		$this->secret = $options['secret'];
 		$this->nick = $options['nick'];
         $this->channels = array_map('strtolower', $options['channels']);
-		if(is_null($this->channels)) $this->channels = [$options['nick']];
+        if (is_null($this->channels)) {
+            $this->channels = [$options['nick']];
+        }
         $this->commandSymbols = $options['commandsymbol'] ?? ['!'];
 
 		$this->whitelist = $options['whitelist'];
@@ -87,7 +93,9 @@ class Twitch
 
 		$this->connector = new Connector($this->loop, $options['socket_options']);
 
-		if (is_array($options['badwords'])) $this->badwords = $options['badwords'];
+        if (is_array($options['badwords'])) {
+            $this->badwords = $options['badwords'];
+        }
 		$this->commands = $options['commands'] ?? new Commands($this, $this->logLevel);
 	}
 	
@@ -99,7 +107,9 @@ class Twitch
 			$this->connect();
 		}
         $this->emit('[LOOP->RUN]', self::LOG_INFO);
-		if ($runLoop) $this->loop->run();
+        if ($runLoop) {
+            $this->loop->run();
+        }
 	}
 	
 	public function close(bool $closeLoop = true): void
@@ -107,7 +117,9 @@ class Twitch
         $this->emit('[CLOSE]', self::LOG_INFO);
 		if ($this->running) {
 			$this->running = false;
-			foreach ($this->channels as $channel) $this->leaveChannel($channel);
+            foreach ($this->channels as $channel) {
+                $this->leaveChannel($channel);
+            }
 		}
         if ($closeLoop && !$this->closing) {
             $this->closing = true;
@@ -180,8 +192,16 @@ class Twitch
 	*/
 	protected function resolveOptions(array $options = []): array
 	{
-		if (!$options['secret']) trigger_error('TwitchPHP requires a client secret to connect. Get your Chat OAuth Password here => https://twitchapps.com/tmi/', E_USER_ERROR);
-		if (!$options['nick']) trigger_error('TwitchPHP requires a client username to connect. This should be the same username you use to log in.', E_USER_ERROR);
+		if (!$options['secret']) {
+            trigger_error(
+                'TwitchPHP requires a client secret to connect. Get your Chat OAuth Password here => https://twitchapps.com/tmi/',
+                E_USER_ERROR);
+        }
+		if (!$options['nick']) {
+            trigger_error(
+                'TwitchPHP requires a client username to connect. This should be the same username you use to log in.',
+                E_USER_ERROR);
+        }
 		$options['nick'] = strtolower($options['nick']);
 		$options['loop'] = $options['loop'] ?? Loop::get();
 		$options['symbol'] = $options['symbol'] ?? '!';
@@ -232,7 +252,9 @@ class Twitch
 		$this->connection->write("PASS " . $this->secret . "\n");
 		$this->connection->write("NICK " . $this->nick . "\n");
 		$this->connection->write("CAP REQ :twitch.tv/membership\n");
-		foreach ($this->channels as $channel) $this->joinChannel($channel);
+        foreach ($this->channels as $channel) {
+            $this->joinChannel($channel);
+        }
 	}
 
 	protected function pingPong(string $data): void
@@ -352,7 +374,9 @@ class Twitch
 	protected function parseChannel(string $data): ?string
 	{
 		$arr = explode(' ', substr($data, strpos($data, '#')));
-        if (strpos($arr[0], "#") === 0) return substr($arr[0], 1);
+        if (strpos($arr[0], "#") === 0) {
+            return substr($arr[0], 1);
+        }
         return null;
 	}
 

@@ -81,7 +81,9 @@ class Commands
 		if ($command === 'join')
 		{
 			$this->twitch->emit('[JOIN]' . $args[1], Twitch::LOG_INFO);
-			if (!$args[1]) return null;
+			if (!$args[1]) {
+                return null;
+            }
 			$this->twitch->joinChannel($args[1]);
 		}
 
@@ -94,7 +96,9 @@ class Commands
 		if ($command === 'so')
 		{
 			$this->twitch->emit('[SO] ' . $args[1], Twitch::LOG_INFO);
-			if (!$args[1]) return null;
+            if (!$args[1]) {
+                return null;
+            }
 			$this->twitch->sendMessage('Hey, go check out ' . $args[1] . ' at https://www.twitch.tv/' . $args[1] . ' They are good peoples! Pretty good. Pretty good!');
 		}
 
