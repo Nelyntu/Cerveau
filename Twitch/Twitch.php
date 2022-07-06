@@ -143,7 +143,9 @@ class Twitch
 
         $string = strtolower($string);
         $this->connection->write("JOIN #" . $string . "\n");
-        if (!in_array($string, $this->channels)) $this->channels[] = $string;
+        if (!in_array($string, $this->channels, true)) {
+            $this->channels[] = $string;
+        }
 	}
 	
 	/*
@@ -303,13 +305,13 @@ class Twitch
 //			$this->lastchannel = null;
 			
 			//Public commands
-			if (in_array($command, $this->functions)) {
+            if (in_array($command, $this->functions, true)) {
                 $this->emit('[FUNCTION]', self::LOG_INFO);
 				$response = $this->commands->handle($command, $dataArr);
 			}
 			
 			//Whitelisted commands
-			if ( in_array($this->lastuser, $this->whitelist) || ($this->lastuser == $this->nick) ) {
+            if (in_array($this->lastuser, $this->whitelist, true) || ($this->lastuser == $this->nick)) {
                 if (in_array($command, $this->restrictedFunctions, true)) {
                     $this->emit('[RESTRICTED FUNCTION]', self::LOG_INFO);
 					$response = $this->commands->handle($command, $dataArr);
