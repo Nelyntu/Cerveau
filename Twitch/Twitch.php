@@ -109,17 +109,15 @@ class Twitch
 			$this->running = false;
 			foreach ($this->channels as $channel) $this->leaveChannel($channel);
 		}
-		if ($closeLoop) {
-			if(!$this->closing) {
-				$this->closing = true;
-                $this->emit('[LOOP->STOP]', self::LOG_INFO);
+        if ($closeLoop && !$this->closing) {
+            $this->closing = true;
+            $this->emit('[LOOP->STOP]', self::LOG_INFO);
 
-				$this->loop->addTimer(3, function () {
-                    $this->closing = false;
-                    $this->loop->stop();
-				});
-			}
-		}
+            $this->loop->addTimer(3, function () {
+                $this->closing = false;
+                $this->loop->stop();
+            });
+        }
 	}
 	
 	public function sendMessage(string $data, ?string $channel = null): void
@@ -321,12 +319,10 @@ class Twitch
 			}
 			
 			//Bot owner commands (shares the same username)
-			if ($this->lastuser === $this->nick) {
-                if (in_array($command, $this->privateFunctions, true)) {
-                    $this->emit('[PRIVATE FUNCTION]', self::LOG_INFO);
-					$response = $this->commands->handle($command, $dataArr);
-				}
-			}
+            if ($this->lastuser === $this->nick && in_array($command, $this->privateFunctions, true)) {
+                $this->emit('[PRIVATE FUNCTION]', self::LOG_INFO);
+                $response = $this->commands->handle($command, $dataArr);
+            }
 			
 			//Reply with a preset message
 			if (isset($this->responses[$command])) {
