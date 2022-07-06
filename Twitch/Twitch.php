@@ -34,13 +34,13 @@ class Twitch
 	private string $secret;
 	private string $nick;
     /** @var string[] */
-	private $channels;
+	private array $channels;
     /** @var string[] */
     private $commandSymbols;
     /** @var string[] */
 	private array $badwords;
     /** @var string[] */
-	private $whitelist;
+	private array $whitelist;
     /** @var string[] */
 	private array $responses;
     /** @var string[] */
@@ -71,11 +71,11 @@ class Twitch
 		$this->loop = $options['loop'];
 		$this->secret = $options['secret'];
 		$this->nick = $options['nick'];
-		foreach($options['channels'] as $channel) $this->channels[] = strtolower($channel);
+        $this->channels = array_map('strtolower', $options['channels']);
 		if(is_null($this->channels)) $this->channels = array($options['nick']);
         $this->commandSymbols = $options['commandsymbol'] ?? array('!');
-		
-		foreach ($options['whitelist'] as $whitelist) $this->whitelist[] = $whitelist;
+
+		$this->whitelist = $options['whitelist'];
 		$this->responses = $options['responses'] ?? array();
 		$this->functions = $options['functions'] ?? array();
         $this->restrictedFunctions = $options['restricted_functions'] ?? array();
