@@ -130,16 +130,16 @@ class Twitch
         }
 	}
 	
-	public function sendMessage(string $data, ?string $channel = null): void
+	public function sendMessage(string $data, string $channel): void
 	{
 		if (!isset($this->connection)) {
             return;
         }
 
-        $this->connection->write("PRIVMSG #" . ($channel ?? $this->reallastchannel ?? current($this->channels)) . " :" . $data . "\n");
-        $this->emit('[REPLY] #' . ($channel ?? $this->reallastchannel ?? current($this->channels)) . ' - ' . $data, self::LOG_NOTICE);
+        $this->connection->write("PRIVMSG #" . $channel . " :" . $data . "\n");
+        $this->emit('[REPLY] #' . $channel . ' - ' . $data, self::LOG_NOTICE);
         // if ($channel)
-        $this->reallastchannel = $channel ?? $this->reallastchannel ?? current($this->channels);
+        $this->reallastchannel = $channel;
 	}
 	
 	public function joinChannel(string $string = ""): void
@@ -271,14 +271,16 @@ class Twitch
 			return;
 		}
         if (false !== strpos($data, 'PRIVMSG')) {
-			$response = $this->parseMessage($data);
-			if ($response) {
-				if (!empty($this->badwords) && $this->badwordsCheck($response)) {
-					$this->ban($this->lastuser);
-				}
-				$payload = '@' . $this->lastuser . ', ' . $response . "\n";
-				$this->sendMessage($payload);
-			}
+            $response = $this->parseMessage($data);
+            if ($response === null) {
+                return;
+            }
+
+            if (!empty($this->badwords) && $this->badwordsCheck($response->message)) {
+                $this->ban($this->lastuser);
+            }
+            $payload = '@' . $this->lastuser . ', ' . $response->message . "\n";
+            $this->sendMessage($payload, $response->channel);
 		}
 	}
 
@@ -294,7 +296,7 @@ class Twitch
 		return false;
 	}
 	
-    protected function parseMessage(string $data): ?string
+    protected function parseMessage(string $data): ?Response
     {
         $message = ChatMessageParser::parse($data);
 
@@ -350,7 +352,11 @@ class Twitch
             $response = $this->responses[$commandName];
         }
 
-        return $response;
+        if (!$response) {
+            return null;
+        }
+
+        return new Response($message->channel, $response);
     }
 
 	/*
