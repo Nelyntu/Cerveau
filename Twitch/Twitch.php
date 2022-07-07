@@ -28,7 +28,7 @@ class Twitch
     ];
 
 	protected LoopInterface $loop;
-	protected Commands $commands;
+	protected CommandDispatcher $commands;
 
 //	private $socket_options;
 	
@@ -94,7 +94,7 @@ class Twitch
         if (is_array($options['badwords'])) {
             $this->badwords = $options['badwords'];
         }
-		$this->commands = $options['commands'] ?? new Commands($this, $this->logLevel);
+		$this->commands = $options['commands'] ?? new CommandDispatcher($this, $this->logLevel);
 	}
 	
 	public function run(bool $runLoop = true): void
@@ -280,7 +280,7 @@ class Twitch
 			}
 		}
 	}
-	
+
 	protected function badwordsCheck($message): bool
 	{
         $this->emit('[BADWORD CHECK] ' . $message, self::LOG_DEBUG);
@@ -293,8 +293,8 @@ class Twitch
 		return false;
 	}
 	
-	protected function parseMessage(string $data): ?string
-	{
+    protected function parseMessage(string $data): ?string
+    {
         $message = $this->toMessageObject($data);
 
         $this->reallastchannel = $message->channel;
@@ -318,41 +318,40 @@ class Twitch
         }
 
         $response = '';
-        $lastmessage = trim(substr($message->text, strlen($commandSymbol)));
-        $dataArr = explode(' ', $lastmessage);
-        $command = strtolower(trim($dataArr[0]));
-        $this->emit("[COMMAND] `$command`", self::LOG_INFO);
+        $command = $this->toCommand($message, $commandSymbol);
+        $commandName = $command->command;
+        $this->emit("[COMMAND] `". $commandName ."`", self::LOG_INFO);
         $this->lastuser = $message->user;
 
         //Public commands
-        if (in_array($command, $this->functions, true)) {
+        if (in_array($commandName, $this->functions, true)) {
             $this->emit('[FUNCTION]', self::LOG_INFO);
-            $response = $this->commands->handle($command, $dataArr);
+            $response = $this->commands->handle($command);
         }
 
         //Whitelisted commands
-        if (in_array($message->user, $this->whitelist, true) || $message->user === $this->nick) {
-            if (in_array($command, $this->restrictedFunctions, true)) {
+        if ($message->user === $this->nick || in_array($message->user, $this->whitelist, true)) {
+            if (in_array($commandName, $this->restrictedFunctions, true)) {
                 $this->emit('[RESTRICTED FUNCTION]', self::LOG_INFO);
-                $response = $this->commands->handle($command, $dataArr);
+                $response = $this->commands->handle($command);
             }
         }
 
         //Bot owner commands (shares the same username)
-        if ($message->user === $this->nick && in_array($command, $this->privateFunctions, true)) {
+        if ($message->user === $this->nick && in_array($commandName, $this->privateFunctions, true)) {
             $this->emit('[PRIVATE FUNCTION]', self::LOG_INFO);
-            $response = $this->commands->handle($command, $dataArr);
+            $response = $this->commands->handle($command);
         }
 
         //Reply with a preset message
-        if (isset($this->responses[$command])) {
+        if (isset($this->responses[$commandName])) {
             $this->emit('[RESPONSE]', self::LOG_INFO);
-            $response = $this->responses[$command];
+            $response = $this->responses[$commandName];
         }
 
-		return $response;
-	}
-	
+        return $response;
+    }
+
 	protected function parseUser(string $data): ?string
 	{
         if (strpos($data, ":") === 0) {
@@ -386,11 +385,6 @@ class Twitch
             return;
         }
         echo "[EMIT][".date('H:i:s')."][".self::LOG_LEVEL_LABELS[$level]."] ". $string . PHP_EOL;
-	}
-	
-	public function getChannels(): array
-	{
-		return $this->channels;
 	}
 
     public function getCommandSymbols(): array
@@ -430,5 +424,14 @@ class Twitch
         $text = trim(substr($data, strpos($data, 'PRIVMSG') + 11 + strlen($channel)));
 
         return new Message($channel, $user, $text);
+    }
+
+    private function toCommand(Message $message, string $commandSymbol): Command
+    {
+        $withoutSymbol = trim(substr($message->text, strlen($commandSymbol)));
+        $dataArr = explode(' ', $withoutSymbol);
+        $command = strtolower(trim($dataArr[0]));
+
+        return new Command($message->channel, $message->user, $command, $dataArr);
     }
 }

@@ -13,7 +13,7 @@ use Twitch\CommandHandler\CommandHandlerInterface;
 /**
  * Provides an easy way to handle commands.
  */
-class Commands
+class CommandDispatcher
 {
     protected Twitch $twitch;
     protected int $logLevel;
@@ -31,24 +31,24 @@ class Commands
         $this->commands[] = $command;
     }
 
-    public function handle(string $command, ?array $args = []): ?string
+    public function handle(Command $command): ?string
     {
-        $this->twitch->emit("[HANDLE COMMAND] `$command`", Twitch::LOG_INFO);
-        $this->twitch->emit("[ARGS] " . print_r($args, true), Twitch::LOG_INFO);
+        $commandName = $command->command;
+        $this->twitch->emit("[ARGS] " . print_r($command->arguments, true), Twitch::LOG_INFO);
 
         $response = null;
         $found = false;
 
         foreach ($this->commands as $commandHandler) {
-            if (!$commandHandler->supports($command)) {
+            if (!$commandHandler->supports($commandName)) {
                 continue;
             }
             $found = true;
-            $response = $commandHandler->handle($args);
+            $response = $commandHandler->handle($command->arguments);
         }
 
         if (!$found) {
-            $this->twitch->emit("[HANDLE COMMAND] `$command` NOT HANDLED", Twitch::LOG_INFO);
+            $this->twitch->emit("[HANDLE COMMAND] `$commandName` NOT HANDLED", Twitch::LOG_INFO);
         }
 
         return $response;
