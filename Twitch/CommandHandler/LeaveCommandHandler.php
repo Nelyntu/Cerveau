@@ -2,6 +2,7 @@
 
 namespace Twitch\CommandHandler;
 
+use Twitch\Command;
 use Twitch\Twitch;
 
 class LeaveCommandHandler implements CommandHandlerInterface
@@ -18,10 +19,10 @@ class LeaveCommandHandler implements CommandHandlerInterface
         return $name === 'leave';
     }
 
-    public function handle($args): ?string
+    public function handle(Command $command): ?string
     {
         $this->twitch->emit('[PART]', Twitch::LOG_INFO);
-        $this->twitch->leaveChannel();
+        $this->twitch->leaveChannel($command->channel);
 
         return null;
     }

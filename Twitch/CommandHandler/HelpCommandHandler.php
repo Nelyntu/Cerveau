@@ -2,6 +2,7 @@
 
 namespace Twitch\CommandHandler;
 
+use Twitch\Command;
 use Twitch\Twitch;
 
 class HelpCommandHandler implements CommandHandlerInterface
@@ -18,7 +19,7 @@ class HelpCommandHandler implements CommandHandlerInterface
         return $name === 'help';
     }
 
-    public function handle($args): ?string
+    public function handle(Command $command): ?string
     {
         $commandSymbols = $this->twitch->getCommandSymbols();
         $responses = $this->twitch->getResponses();

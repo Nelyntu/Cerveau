@@ -2,6 +2,7 @@
 
 namespace Twitch\CommandHandler;
 
+use Twitch\Command;
 use Twitch\Twitch;
 
 class BanCommandHandlerHandler implements CommandHandlerInterface
@@ -18,14 +19,15 @@ class BanCommandHandlerHandler implements CommandHandlerInterface
         return $name === 'ban';
     }
 
-    public function handle($args): ?string
+    public function handle(Command $command): ?string
     {
         $reason = '';
-        for ($i=2, $iMax = count($args); $i< $iMax; $i++) {
-            $reason .= $args[$i] . ' ';
+        for ($i=2, $iMax = count($command->arguments); $i< $iMax; $i++) {
+            $reason .= $command->arguments[$i] . ' ';
         }
-        $this->twitch->emit('[BAN] ' . $args[1] . " $reason", Twitch::LOG_INFO);
-        $this->twitch->ban($args[1], trim($reason)); //ban with optional reason
+        $bannedUser = $command->arguments[1];
+        $this->twitch->emit('[BAN] ' . $bannedUser . " $reason", Twitch::LOG_INFO);
+        $this->twitch->ban($bannedUser, trim($reason)); //ban with optional reason
 
         return null;
     }

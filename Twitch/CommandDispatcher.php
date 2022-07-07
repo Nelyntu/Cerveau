@@ -44,7 +44,7 @@ class CommandDispatcher
                 continue;
             }
             $found = true;
-            $response = $commandHandler->handle($command->arguments);
+            $response = $commandHandler->handle($command);
         }
 
         if (!$found) {

@@ -2,6 +2,7 @@
 
 namespace Twitch\CommandHandler;
 
+use Twitch\Command;
 use Twitch\Twitch;
 
 class SoCommandHandler implements CommandHandlerInterface
@@ -18,13 +19,14 @@ class SoCommandHandler implements CommandHandlerInterface
         return $name === 'so';
     }
 
-    public function handle($args): ?string
+    public function handle(Command $command): ?string
     {
-        $this->twitch->emit('[SO] ' . $args[1], Twitch::LOG_INFO);
-        if (!$args[1]) {
+        $userToSO = $command->arguments[1];
+        $this->twitch->emit('[SO] ' . $userToSO, Twitch::LOG_INFO);
+        if (!$userToSO) {
             return null;
         }
 
-        return 'Hey, go check out ' . $args[1] . ' at https://www.twitch.tv/' . $args[1] . ' They are good peoples! Pretty good. Pretty good!';
+        return 'Hey, go check out ' . $userToSO . ' at https://www.twitch.tv/' . $userToSO . ' They are good peoples! Pretty good. Pretty good!';
     }
 }

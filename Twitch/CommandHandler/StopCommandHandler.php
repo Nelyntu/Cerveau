@@ -2,6 +2,7 @@
 
 namespace Twitch\CommandHandler;
 
+use Twitch\Command;
 use Twitch\Twitch;
 
 class StopCommandHandler implements CommandHandlerInterface
@@ -18,7 +19,7 @@ class StopCommandHandler implements CommandHandlerInterface
         return $name === 'stop';
     }
 
-    public function handle($args): ?string
+    public function handle(Command $command): ?string
     {
         $this->twitch->emit('[STOP]', Twitch::LOG_INFO);
         $this->twitch->close();

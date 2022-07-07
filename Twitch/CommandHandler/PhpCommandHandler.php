@@ -2,6 +2,7 @@
 
 namespace Twitch\CommandHandler;
 
+use Twitch\Command;
 use Twitch\Twitch;
 
 class PhpCommandHandler implements CommandHandlerInterface
@@ -18,7 +19,7 @@ class PhpCommandHandler implements CommandHandlerInterface
         return $name === 'php';
     }
 
-    public function handle($args): ?string
+    public function handle(Command $command): ?string
     {
         $this->twitch->emit('[PHP]', Twitch::LOG_INFO);
         return 'Current PHP version: ' . PHP_VERSION;

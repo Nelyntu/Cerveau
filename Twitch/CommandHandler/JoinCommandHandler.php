@@ -2,6 +2,7 @@
 
 namespace Twitch\CommandHandler;
 
+use Twitch\Command;
 use Twitch\Twitch;
 
 class JoinCommandHandler implements CommandHandlerInterface
@@ -18,13 +19,14 @@ class JoinCommandHandler implements CommandHandlerInterface
         return $name === 'join';
     }
 
-    public function handle($args): ?string
+    public function handle(Command $command): ?string
     {
-        $this->twitch->emit('[JOIN]' . $args[1], Twitch::LOG_INFO);
-        if (!$args[1]) {
+        $channel = $command->arguments[1];
+        $this->twitch->emit('[JOIN]' . $channel, Twitch::LOG_INFO);
+        if (!$channel) {
             return null;
         }
-        $this->twitch->joinChannel($args[1]);
+        $this->twitch->joinChannel($channel);
 
         return null;
     }
