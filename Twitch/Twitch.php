@@ -157,25 +157,26 @@ class Twitch
 	}
 	
 	/*
-	* Commands.php should never send a string so as to prevent users from being able to tell the bot to leave someone else's channel
 	* This command is exposed so other ReactPHP applications can call it, but those applications should always attempt to pass a valid string
 	* getChannels has also been exposed for the purpose of checking if the string exists before attempting to call this function
 	*/
-	public function leaveChannel(?string $string = ""): void
+	public function leaveChannel(string $channelToLeave): void
 	{
-        $this->emit('[VERBOSE] [LEAVE CHANNEL] `' . $string . '`', self::LOG_INFO);
-		if (isset($this->connection)) {
-			$string = strtolower($string ?? $this->reallastchannel);
-			$this->connection->write("PART #" . ($string ?? $this->reallastchannel) . "\n");
-			foreach ($this->channels as &$channel) {
-                if ($channel === $string) {
-                    $channel = null;
-                    unset ($channel);
-                }
-			}
-		}
-	}
-	
+        $channelToLeave = strtolower($channelToLeave);
+        $this->emit('[VERBOSE] [LEAVE CHANNEL] `' . $channelToLeave . '`', self::LOG_INFO);
+        if (!isset($this->connection)) {
+            return;
+        }
+
+        $this->connection->write("PART #" . $channelToLeave . "\n");
+        foreach ($this->channels as &$channel) {
+            if ($channel === $channelToLeave) {
+                $channel = null;
+                unset ($channel);
+            }
+        }
+    }
+
     public function ban($username, $reason = ''): void
     {
         $this->emit('[BAN] ' . $username . ' - ' . $reason, self::LOG_INFO);
