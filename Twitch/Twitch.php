@@ -12,7 +12,7 @@ use React\EventLoop\Loop;
 use React\EventLoop\LoopInterface;
 use React\Socket\ConnectionInterface;
 use React\Socket\Connector;
-use Twitch\Command\CommandInterface;
+use Twitch\CommandHandler\CommandHandlerInterface;
 
 class Twitch
 {
@@ -295,21 +295,19 @@ class Twitch
 	
 	protected function parseMessage(string $data): ?string
 	{
-        $reallastuser = $this->parseUser($data);
-		$this->reallastchannel = $this->parseChannel($data);
-        $lastmessage = trim(substr($data, strpos($data, 'PRIVMSG')+11+strlen($this->reallastchannel)));
+        $message = $this->toMessageObject($data);
 
-        $this->emit("[DEBUG] [LASTMESSAGE] '" . $lastmessage . "'", self::LOG_DEBUG);
+        $this->reallastchannel = $message->channel;
 
-        $this->emit('[PRIVMSG] (#' . $this->reallastchannel . ') ' . $reallastuser . ': ' . $lastmessage, self::LOG_INFO);
-		
-        if (!empty($this->badwords) && $this->badwordsCheck($lastmessage)) {
-            $this->ban($reallastuser);
-		}
+        $this->emit('[PRIVMSG] (#' . $message->channel . ') ' . $message->user . ': ' . $message->text, self::LOG_DEBUG);
+
+        if (!empty($this->badwords) && $this->badwordsCheck($message->text)) {
+            $this->ban($message->user);
+        }
 
         $commandSymbol = null;
         foreach($this->commandSymbols as $symbol) {
-            if (strpos($lastmessage, $symbol) === 0) {
+            if (strpos($message->text, $symbol) === 0) {
                 $commandSymbol = $symbol;
                 break;
             }
@@ -320,13 +318,11 @@ class Twitch
         }
 
         $response = '';
-        $lastmessage = trim(substr($lastmessage, strlen($commandSymbol)));
+        $lastmessage = trim(substr($message->text, strlen($commandSymbol)));
         $dataArr = explode(' ', $lastmessage);
         $command = strtolower(trim($dataArr[0]));
         $this->emit("[COMMAND] `$command`", self::LOG_INFO);
-        $this->lastuser = $reallastuser;
-        $this->lastchannel = $this->reallastchannel;
-        // $this->lastchannel = null;
+        $this->lastuser = $message->user;
 
         //Public commands
         if (in_array($command, $this->functions, true)) {
@@ -335,7 +331,7 @@ class Twitch
         }
 
         //Whitelisted commands
-        if (in_array($reallastuser, $this->whitelist, true) || $reallastuser === $this->nick) {
+        if (in_array($message->user, $this->whitelist, true) || $message->user === $this->nick) {
             if (in_array($command, $this->restrictedFunctions, true)) {
                 $this->emit('[RESTRICTED FUNCTION]', self::LOG_INFO);
                 $response = $this->commands->handle($command, $dataArr);
@@ -343,7 +339,7 @@ class Twitch
         }
 
         //Bot owner commands (shares the same username)
-        if ($reallastuser === $this->nick && in_array($command, $this->privateFunctions, true)) {
+        if ($message->user === $this->nick && in_array($command, $this->privateFunctions, true)) {
             $this->emit('[PRIVATE FUNCTION]', self::LOG_INFO);
             $response = $this->commands->handle($command, $dataArr);
         }
@@ -422,8 +418,17 @@ class Twitch
         return $this->privateFunctions;
     }
 
-    public function addCommand(CommandInterface $command): void
+    public function addCommand(CommandHandlerInterface $command): void
     {
         $this->commands->addCommand($command);
+    }
+
+    private function toMessageObject(string $data): Message
+    {
+        $user = $this->parseUser($data);
+        $channel = $this->parseChannel($data);
+        $text = trim(substr($data, strpos($data, 'PRIVMSG') + 11 + strlen($channel)));
+
+        return new Message($channel, $user, $text);
     }
 }

@@ -1,10 +1,10 @@
 <?php
 
-namespace Twitch\Command;
+namespace Twitch\CommandHandler;
 
 use Twitch\Twitch;
 
-class SoCommand implements CommandInterface
+class JoinCommandHandler implements CommandHandlerInterface
 {
     private Twitch $twitch;
 
@@ -15,16 +15,17 @@ class SoCommand implements CommandInterface
 
     public function supports($name): bool
     {
-        return $name === 'so';
+        return $name === 'join';
     }
 
     public function handle($args): ?string
     {
-        $this->twitch->emit('[SO] ' . $args[1], Twitch::LOG_INFO);
+        $this->twitch->emit('[JOIN]' . $args[1], Twitch::LOG_INFO);
         if (!$args[1]) {
             return null;
         }
+        $this->twitch->joinChannel($args[1]);
 
-        return 'Hey, go check out ' . $args[1] . ' at https://www.twitch.tv/' . $args[1] . ' They are good peoples! Pretty good. Pretty good!';
+        return null;
     }
 }

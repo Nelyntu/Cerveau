@@ -1,10 +1,10 @@
 <?php
 
-namespace Twitch\Command;
+namespace Twitch\CommandHandler;
 
 use Twitch\Twitch;
 
-class JoinCommand implements CommandInterface
+class StopCommandHandler implements CommandHandlerInterface
 {
     private Twitch $twitch;
 
@@ -15,16 +15,13 @@ class JoinCommand implements CommandInterface
 
     public function supports($name): bool
     {
-        return $name === 'join';
+        return $name === 'stop';
     }
 
     public function handle($args): ?string
     {
-        $this->twitch->emit('[JOIN]' . $args[1], Twitch::LOG_INFO);
-        if (!$args[1]) {
-            return null;
-        }
-        $this->twitch->joinChannel($args[1]);
+        $this->twitch->emit('[STOP]', Twitch::LOG_INFO);
+        $this->twitch->close();
 
         return null;
     }

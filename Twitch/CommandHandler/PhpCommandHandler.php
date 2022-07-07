@@ -1,10 +1,10 @@
 <?php
 
-namespace Twitch\Command;
+namespace Twitch\CommandHandler;
 
 use Twitch\Twitch;
 
-class PhpCommand implements CommandInterface
+class PhpCommandHandler implements CommandHandlerInterface
 {
     private Twitch $twitch;
 

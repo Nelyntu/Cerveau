@@ -20,12 +20,12 @@ $options['responses']['discord'] = $options['social']['discord'];
 
 $twitch = new Twitch\Twitch($options);
 
-$twitch->addCommand(new \Twitch\Command\BanCommand($twitch));
-$twitch->addCommand(new \Twitch\Command\HelpCommand($twitch));
-$twitch->addCommand(new \Twitch\Command\JoinCommand($twitch));
-$twitch->addCommand(new \Twitch\Command\LeaveCommand($twitch));
-$twitch->addCommand(new \Twitch\Command\PhpCommand($twitch));
-$twitch->addCommand(new \Twitch\Command\SoCommand($twitch));
-$twitch->addCommand(new \Twitch\Command\StopCommand($twitch));
+$twitch->addCommand(new \Twitch\CommandHandler\BanCommandHandlerHandler($twitch));
+$twitch->addCommand(new \Twitch\CommandHandler\HelpCommandHandler($twitch));
+$twitch->addCommand(new \Twitch\CommandHandler\JoinCommandHandler($twitch));
+$twitch->addCommand(new \Twitch\CommandHandler\LeaveCommandHandler($twitch));
+$twitch->addCommand(new \Twitch\CommandHandler\PhpCommandHandler($twitch));
+$twitch->addCommand(new \Twitch\CommandHandler\SoCommandHandler($twitch));
+$twitch->addCommand(new \Twitch\CommandHandler\StopCommandHandler($twitch));
 
 $twitch->run();

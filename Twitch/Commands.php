@@ -8,7 +8,7 @@
 
 namespace Twitch;
 
-use Twitch\Command\CommandInterface;
+use Twitch\CommandHandler\CommandHandlerInterface;
 
 /**
  * Provides an easy way to handle commands.
@@ -17,7 +17,7 @@ class Commands
 {
     protected Twitch $twitch;
     protected int $logLevel;
-    /** @var CommandInterface[] */
+    /** @var CommandHandlerInterface[] */
     protected array $commands = [];
 
     public function __construct(Twitch $twitch, int $logLevel)
@@ -26,7 +26,7 @@ class Commands
         $this->logLevel = $logLevel;
     }
 
-    public function addCommand(CommandInterface $command): void
+    public function addCommand(CommandHandlerInterface $command): void
     {
         $this->commands[] = $command;
     }

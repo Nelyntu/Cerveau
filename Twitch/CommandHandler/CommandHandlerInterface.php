@@ -1,8 +1,8 @@
 <?php
 
-namespace Twitch\Command;
+namespace Twitch\CommandHandler;
 
-interface CommandInterface
+interface CommandHandlerInterface
 {
     public function supports($name): bool;
     public function handle($args): ?string;
