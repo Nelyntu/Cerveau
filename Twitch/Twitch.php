@@ -306,21 +306,21 @@ class Twitch
         if (!empty($this->badwords) && $this->badwordsCheck($lastmessage)) {
             $this->ban($reallastuser);
 		}
-		
-		$response = '';
-		$commandSymbol = null;
+
+        $commandSymbol = null;
         foreach($this->commandSymbols as $symbol) {
             if (strpos($lastmessage, $symbol) === 0) {
-                $lastmessage = trim(substr($lastmessage, strlen($symbol)));
                 $commandSymbol = $symbol;
                 break;
-			}
-		}
+            }
+        }
 
         if ($commandSymbol === null) {
             return null;
         }
 
+        $response = '';
+        $lastmessage = trim(substr($lastmessage, strlen($commandSymbol)));
         $dataArr = explode(' ', $lastmessage);
         $command = strtolower(trim($dataArr[0]));
         $this->emit("[COMMAND] `$command`", self::LOG_INFO);
