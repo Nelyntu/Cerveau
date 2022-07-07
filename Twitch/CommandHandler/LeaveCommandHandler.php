@@ -22,7 +22,7 @@ class LeaveCommandHandler implements CommandHandlerInterface
     public function handle(Command $command): ?string
     {
         $this->twitch->emit('[PART]', Twitch::LOG_INFO);
-        $this->twitch->leaveChannel($command->channel);
+        $this->twitch->getIrcApi()->leaveChannel($command->channel);
 
         return null;
     }

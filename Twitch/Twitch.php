@@ -31,7 +31,7 @@ class Twitch
     private string $secret;
     private string $nick;
     /** @var string[] */
-    private array $channels;
+    private array $initialChannels;
     /** @var string[] */
     private $commandSymbols;
     /** @var string[] */
@@ -51,6 +51,7 @@ class Twitch
     protected bool $running = false;
     private bool $closing = false;
     private int $logLevel;
+    private ?IRCApi $ircApi = null;
 
     public function __construct(array $options = [])
     {
@@ -65,9 +66,9 @@ class Twitch
         $this->loop = $options['loop'];
         $this->secret = $options['secret'];
         $this->nick = $options['nick'];
-        $this->channels = array_map('strtolower', $options['channels']);
-        if (empty($this->channels)) {
-            $this->channels = [$options['nick']];
+        $this->initialChannels = array_map('strtolower', $options['channels']);
+        if (empty($this->initialChannels)) {
+            $this->initialChannels = [$options['nick']];
         }
         $this->commandSymbols = $options['commandsymbol'] ?? ['!'];
 
@@ -105,9 +106,7 @@ class Twitch
         $this->emit('[CLOSE]', self::LOG_INFO);
         if ($this->running) {
             $this->running = false;
-            foreach ($this->channels as $channel) {
-                $this->leaveChannel($channel);
-            }
+            $this->ircApi->leaveChannels();
         }
         if ($closeLoop && !$this->closing) {
             $this->closing = true;
@@ -118,58 +117,6 @@ class Twitch
                 $this->loop->stop();
             });
         }
-    }
-
-    public function sendMessage(string $data, string $channel): void
-    {
-        if (!isset($this->connection)) {
-            return;
-        }
-
-        $this->connection->write("PRIVMSG #" . $channel . " :" . $data . "\n");
-        $this->emit('[REPLY] #' . $channel . ' - ' . $data, self::LOG_NOTICE);
-    }
-
-    public function joinChannel(string $string = ""): void
-    {
-        $this->emit('[VERBOSE] [JOIN CHANNEL] `' . $string . '`', self::LOG_INFO);
-        if (!isset($this->connection) || !$string) {
-            return;
-        }
-
-        $string = strtolower($string);
-        $this->connection->write("JOIN #" . $string . "\n");
-        if (!in_array($string, $this->channels, true)) {
-            $this->channels[] = $string;
-        }
-    }
-
-    /**
-     * This command is exposed so other ReactPHP applications can call it, but those applications should always attempt to pass a valid string
-     * getChannels has also been exposed for the purpose of checking if the string exists before attempting to call this function
-     */
-    public function leaveChannel(string $channelToLeave): void
-    {
-        $channelToLeave = strtolower($channelToLeave);
-        $this->emit('[VERBOSE] [LEAVE CHANNEL] `' . $channelToLeave . '`', self::LOG_INFO);
-        if (!isset($this->connection)) {
-            return;
-        }
-
-        $this->connection->write("PART #" . $channelToLeave . "\n");
-        $channelKey = array_search($channelToLeave, $this->channels, true);
-        if ($channelKey !== false) {
-            unset($this->channels[$channelKey]);
-        }
-    }
-
-    public function ban($username, $reason = ''): void
-    {
-        $this->emit('[BAN] ' . $username . ' - ' . $reason, self::LOG_INFO);
-        if ($username === $this->nick || in_array($username, $this->channels, true)) {
-            return;
-        }
-        $this->connection->write("/ban $username $reason");
     }
 
     /**
@@ -215,8 +162,8 @@ class Twitch
 
         $this->connector->connect("$url:$port")->then(
             function (ConnectionInterface $connection) {
-                $this->connection = $connection;
-                $this->initIRC();
+                $this->ircApi = new IRCApi($connection, $this);
+                $this->ircApi->init($this->secret, $this->nick, $this->initialChannels);
 
                 $connection->on('data', function ($data) {
                     $this->process($data);
@@ -232,29 +179,11 @@ class Twitch
         );
     }
 
-    protected function initIRC(): void
-    {
-        $this->emit('[INIT IRC]', self::LOG_INFO);
-        $this->connection->write("PASS " . $this->secret . "\n");
-        $this->connection->write("NICK " . $this->nick . "\n");
-        $this->connection->write("CAP REQ :twitch.tv/membership\n");
-        foreach ($this->channels as $channel) {
-            $this->joinChannel($channel);
-        }
-    }
-
-    protected function pingPong(): void
-    {
-        $this->emit("PING :tmi.twitch.tv", self::LOG_DEBUG);
-        $this->connection->write("PONG :tmi.twitch.tv\n");
-        $this->emit("PONG :tmi.twitch.tv", self::LOG_DEBUG);
-    }
-
     protected function process(string $data): void
     {
         $this->emit('DATA' . $data . '`', self::LOG_DEBUG);
         if (trim($data) === "PING :tmi.twitch.tv") {
-            $this->pingPong();
+            $this->ircApi->pingPong();
 
             return;
         }
@@ -265,10 +194,10 @@ class Twitch
             }
 
             if (!empty($this->badWords) && $this->badWordsCheck($response->message)) {
-                $this->ban($response->fromUser);
+                $this->ircApi->ban($response->fromUser);
             }
             $payload = '@' . $response->fromUser . ', ' . $response->message . "\n";
-            $this->sendMessage($payload, $response->channel);
+            $this->ircApi->sendMessage($payload, $response->channel);
         }
     }
 
@@ -295,7 +224,7 @@ class Twitch
             self::LOG_DEBUG);
 
         if (!empty($this->badWords) && $this->badWordsCheck($message->text)) {
-            $this->ban($message->user);
+            $this->ircApi->ban($message->user);
         }
 
         $commandSymbol = null;
@@ -387,6 +316,11 @@ class Twitch
     public function addCommand(CommandHandlerInterface $command): void
     {
         $this->commands->addCommand($command);
+    }
+
+    public function getIrcApi(): ?IRCApi
+    {
+        return $this->ircApi;
     }
 
     private function toCommand(Message $message, string $commandSymbol): Command

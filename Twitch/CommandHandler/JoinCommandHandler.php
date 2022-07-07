@@ -26,7 +26,7 @@ class JoinCommandHandler implements CommandHandlerInterface
         if (!$channel) {
             return null;
         }
-        $this->twitch->joinChannel($channel);
+        $this->twitch->getIrcApi()->joinChannel($channel);
 
         return null;
     }
