@@ -164,11 +164,9 @@ class Twitch
         }
 
         $this->connection->write("PART #" . $channelToLeave . "\n");
-        foreach ($this->channels as &$channel) {
-            if ($channel === $channelToLeave) {
-                $channel = null;
-                unset ($channel);
-            }
+        $channelKey = array_search($channelToLeave, $this->channels, true);
+        if ($channelKey !== false) {
+            unset($this->channels[$channelKey]);
         }
     }
 
