@@ -295,7 +295,7 @@ class Twitch
 	
     protected function parseMessage(string $data): ?string
     {
-        $message = $this->toMessageObject($data);
+        $message = ChatMessageParser::parse($data);
 
         $this->reallastchannel = $message->channel;
 
@@ -352,30 +352,6 @@ class Twitch
         return $response;
     }
 
-	protected function parseUser(string $data): ?string
-	{
-        if (strpos($data, ":") === 0) {
-			$tmp = explode('!', $data);
-			$user = substr($tmp[0], 1);
-		}
-		return $user;
-	}
-
-    /**
-     * For "#foo bar', it will return "foo"
-     *
-     * @param string $data
-     * @return string|null
-     */
-	protected function parseChannel(string $data): ?string
-	{
-		$arr = explode(' ', substr($data, strpos($data, '#')));
-        if (strpos($arr[0], "#") === 0) {
-            return substr($arr[0], 1);
-        }
-        return null;
-	}
-
 	/*
 	* This function can double as an event listener
 	*/
@@ -415,15 +391,6 @@ class Twitch
     public function addCommand(CommandHandlerInterface $command): void
     {
         $this->commands->addCommand($command);
-    }
-
-    private function toMessageObject(string $data): Message
-    {
-        $user = $this->parseUser($data);
-        $channel = $this->parseChannel($data);
-        $text = trim(substr($data, strpos($data, 'PRIVMSG') + 11 + strlen($channel)));
-
-        return new Message($channel, $user, $text);
     }
 
     private function toCommand(Message $message, string $commandSymbol): Command
