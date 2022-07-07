@@ -54,9 +54,7 @@ class Twitch
 	protected Connector $connector;
 	protected ?ConnectionInterface $connection = null;
 	protected bool $running = false;
-    private ?string $reallastchannel = null;
     private ?string $lastuser = null; //Used a command
-//	private $lastchannel; //Where command was used
     private bool $closing = false;
     private int $logLevel;
 
@@ -138,8 +136,6 @@ class Twitch
 
         $this->connection->write("PRIVMSG #" . $channel . " :" . $data . "\n");
         $this->emit('[REPLY] #' . $channel . ' - ' . $data, self::LOG_NOTICE);
-        // if ($channel)
-        $this->reallastchannel = $channel;
 	}
 	
 	public function joinChannel(string $string = ""): void
@@ -299,8 +295,6 @@ class Twitch
     protected function parseMessage(string $data): ?Response
     {
         $message = ChatMessageParser::parse($data);
-
-        $this->reallastchannel = $message->channel;
 
         $this->emit('[PRIVMSG] (#' . $message->channel . ') ' . $message->user . ': ' . $message->text, self::LOG_DEBUG);
 
