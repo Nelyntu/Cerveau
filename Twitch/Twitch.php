@@ -54,7 +54,6 @@ class Twitch
 	protected Connector $connector;
 	protected ?ConnectionInterface $connection = null;
 	protected bool $running = false;
-    private ?string $lastuser = null; //Used a command
     private bool $closing = false;
     private int $logLevel;
 
@@ -273,9 +272,9 @@ class Twitch
             }
 
             if (!empty($this->badwords) && $this->badwordsCheck($response->message)) {
-                $this->ban($this->lastuser);
+                $this->ban($response->fromUser);
             }
-            $payload = '@' . $this->lastuser . ', ' . $response->message . "\n";
+            $payload = '@' . $response->fromUser . ', ' . $response->message . "\n";
             $this->sendMessage($payload, $response->channel);
 		}
 	}
@@ -318,7 +317,6 @@ class Twitch
         $command = $this->toCommand($message, $commandSymbol);
         $commandName = $command->command;
         $this->emit("[COMMAND] `". $commandName ."`", self::LOG_INFO);
-        $this->lastuser = $message->user;
 
         //Public commands
         if (in_array($commandName, $this->functions, true)) {
@@ -350,7 +348,7 @@ class Twitch
             return null;
         }
 
-        return new Response($message->channel, $response);
+        return new Response($message->channel, $message->user, $response);
     }
 
 	/*
