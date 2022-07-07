@@ -26,96 +26,89 @@ class Twitch
         self::LOG_INFO => 'INFO',
         self::LOG_DEBUG => 'DEBUG',
     ];
-
-	protected LoopInterface $loop;
-	protected CommandDispatcher $commands;
-
-//	private $socket_options;
-	
-	private string $secret;
-	private string $nick;
+    protected LoopInterface $loop;
+    protected CommandDispatcher $commands;
+    private string $secret;
+    private string $nick;
     /** @var string[] */
-	private array $channels;
+    private array $channels;
     /** @var string[] */
     private $commandSymbols;
     /** @var string[] */
-	private array $badwords;
+    private array $badWords;
     /** @var string[] */
-	private array $whitelist;
+    private array $whitelist;
     /** @var string[] */
-	private array $responses;
+    private array $responses;
     /** @var string[] */
-	private array $functions;
+    private array $functions;
     /** @var string[] */
     private array $restrictedFunctions;
     /** @var string[] */
     private array $privateFunctions;
-	
-	protected Connector $connector;
-	protected ?ConnectionInterface $connection = null;
-	protected bool $running = false;
+    protected Connector $connector;
+    protected ?ConnectionInterface $connection = null;
+    protected bool $running = false;
     private bool $closing = false;
     private int $logLevel;
 
     public function __construct(array $options = [])
-	{
+    {
         if (PHP_SAPI !== 'cli') {
             trigger_error(
                 'TwitchPHP will not run on a webserver. Please use PHP CLI to run a TwitchPHP self-bot.',
                 E_USER_ERROR);
         }
-		
-		$options = $this->resolveOptions($options);
-		
-		$this->loop = $options['loop'];
-		$this->secret = $options['secret'];
-		$this->nick = $options['nick'];
+
+        $options = $this->resolveOptions($options);
+
+        $this->loop = $options['loop'];
+        $this->secret = $options['secret'];
+        $this->nick = $options['nick'];
         $this->channels = array_map('strtolower', $options['channels']);
-        if (is_null($this->channels)) {
+        if (empty($this->channels)) {
             $this->channels = [$options['nick']];
         }
         $this->commandSymbols = $options['commandsymbol'] ?? ['!'];
 
-		$this->whitelist = $options['whitelist'];
-		$this->responses = $options['responses'] ?? [];
-		$this->functions = $options['functions'] ?? [];
+        $this->whitelist = $options['whitelist'];
+        $this->responses = $options['responses'] ?? [];
+        $this->functions = $options['functions'] ?? [];
         $this->restrictedFunctions = $options['restricted_functions'] ?? [];
         $this->privateFunctions = $options['private_functions'] ?? [];
 
-//		$this->socket_options = $options['socket_options'];
-
         $this->logLevel = $options['logLevel'];
 
-		$this->connector = new Connector($this->loop, $options['socket_options']);
+        $this->connector = new Connector($this->loop, $options['socket_options']);
 
         if (is_array($options['badwords'])) {
-            $this->badwords = $options['badwords'];
+            $this->badWords = $options['badwords'];
         }
-		$this->commands = $options['commands'] ?? new CommandDispatcher($this, $this->logLevel);
-	}
-	
-	public function run(bool $runLoop = true): void
-	{
+        $this->commands = $options['commands'] ?? new CommandDispatcher($this, $this->logLevel);
+    }
+
+    public function run(bool $runLoop = true): void
+    {
         $this->emit('[RUN]', self::LOG_INFO);
-		if (!$this->running) {
-			$this->running = true;
-			$this->connect();
-		}
+        if (!$this->running) {
+            $this->running = true;
+            $this->connect();
+        }
         $this->emit('[LOOP->RUN]', self::LOG_INFO);
         if ($runLoop) {
             $this->loop->run();
         }
-	}
-	
-	public function close(bool $closeLoop = true): void
-	{
+    }
+
+    public function close(bool $closeLoop = true): void
+    {
         $this->emit('[CLOSE]', self::LOG_INFO);
-		if ($this->running) {
-			$this->running = false;
+        if ($this->running) {
+            $this->running = false;
             foreach ($this->channels as $channel) {
                 $this->leaveChannel($channel);
             }
-		}
+        }
         if ($closeLoop && !$this->closing) {
             $this->closing = true;
             $this->emit('[LOOP->STOP]', self::LOG_INFO);
@@ -125,22 +118,22 @@ class Twitch
                 $this->loop->stop();
             });
         }
-	}
-	
-	public function sendMessage(string $data, string $channel): void
-	{
-		if (!isset($this->connection)) {
+    }
+
+    public function sendMessage(string $data, string $channel): void
+    {
+        if (!isset($this->connection)) {
             return;
         }
 
         $this->connection->write("PRIVMSG #" . $channel . " :" . $data . "\n");
         $this->emit('[REPLY] #' . $channel . ' - ' . $data, self::LOG_NOTICE);
-	}
-	
-	public function joinChannel(string $string = ""): void
-	{
+    }
+
+    public function joinChannel(string $string = ""): void
+    {
         $this->emit('[VERBOSE] [JOIN CHANNEL] `' . $string . '`', self::LOG_INFO);
-		if (!isset($this->connection) || !$string) {
+        if (!isset($this->connection) || !$string) {
             return;
         }
 
@@ -149,14 +142,14 @@ class Twitch
         if (!in_array($string, $this->channels, true)) {
             $this->channels[] = $string;
         }
-	}
-	
-	/*
-	* This command is exposed so other ReactPHP applications can call it, but those applications should always attempt to pass a valid string
-	* getChannels has also been exposed for the purpose of checking if the string exists before attempting to call this function
-	*/
-	public function leaveChannel(string $channelToLeave): void
-	{
+    }
+
+    /**
+     * This command is exposed so other ReactPHP applications can call it, but those applications should always attempt to pass a valid string
+     * getChannels has also been exposed for the purpose of checking if the string exists before attempting to call this function
+     */
+    public function leaveChannel(string $channelToLeave): void
+    {
         $channelToLeave = strtolower($channelToLeave);
         $this->emit('[VERBOSE] [LEAVE CHANNEL] `' . $channelToLeave . '`', self::LOG_INFO);
         if (!isset($this->connection)) {
@@ -179,43 +172,44 @@ class Twitch
         $this->connection->write("/ban $username $reason");
     }
 
-	/*
-	* Attempt to catch errors with the user-provided $options early
-	*/
-	protected function resolveOptions(array $options = []): array
-	{
-		if (!$options['secret']) {
+    /**
+     * Attempt to catch errors with the user-provided $options early
+     */
+    protected function resolveOptions(array $options = []): array
+    {
+        if (!$options['secret']) {
             trigger_error(
                 'TwitchPHP requires a client secret to connect. Get your Chat OAuth Password here => https://twitchapps.com/tmi/',
                 E_USER_ERROR);
         }
-		if (!$options['nick']) {
+        if (!$options['nick']) {
             trigger_error(
                 'TwitchPHP requires a client username to connect. This should be the same username you use to log in.',
                 E_USER_ERROR);
         }
-		$options['nick'] = strtolower($options['nick']);
-		$options['loop'] = $options['loop'] ?? Loop::get();
-		$options['symbol'] = $options['symbol'] ?? '!';
-		$options['responses'] = $options['responses'] ?? [];
-		$options['functions'] = $options['functions'] ?? [];
+        $options['nick'] = strtolower($options['nick']);
+        $options['loop'] = $options['loop'] ?? Loop::get();
+        $options['symbol'] = $options['symbol'] ?? '!';
+        $options['responses'] = $options['responses'] ?? [];
+        $options['functions'] = $options['functions'] ?? [];
 
-		return $options;
-	}
+        return $options;
+    }
 
-	/*
-	* Connect the bot to Twitch
-	* This command should not be run while the bot is still connected to Twitch
-	* Additional handling may be needed in the case of disconnect via $connection->on('close' (See: Issue #1 on GitHub)
-	*/ 
-	protected function connect(): void
-	{
-		$url = 'irc.chat.twitch.tv';
-		$port = '6667';
+    /**
+     * Connect the bot to Twitch
+     * This command should not be run while the bot is still connected to Twitch
+     * Additional handling may be needed in the case of disconnect via $connection->on('close' (See: Issue #1 on GitHub)
+     */
+    protected function connect(): void
+    {
+        $url = 'irc.chat.twitch.tv';
+        $port = '6667';
         $this->emit("[CONNECT] $url:$port", self::LOG_INFO);
 
         if ($this->connection) {
             $this->emit('[SYMANTICS ERROR] A connection already exists!', self::LOG_ERROR);
+
             return;
         }
 
@@ -224,7 +218,7 @@ class Twitch
                 $this->connection = $connection;
                 $this->initIRC();
 
-                $connection->on('data', function($data) {
+                $connection->on('data', function ($data) {
                     $this->process($data);
                 });
                 $connection->on('close', function () {
@@ -236,71 +230,76 @@ class Twitch
                 $this->emit('[ERROR] ' . $exception->getMessage(), Twitch::LOG_ERROR);
             }
         );
-	}
+    }
 
     protected function initIRC(): void
-	{
+    {
         $this->emit('[INIT IRC]', self::LOG_INFO);
-		$this->connection->write("PASS " . $this->secret . "\n");
-		$this->connection->write("NICK " . $this->nick . "\n");
-		$this->connection->write("CAP REQ :twitch.tv/membership\n");
+        $this->connection->write("PASS " . $this->secret . "\n");
+        $this->connection->write("NICK " . $this->nick . "\n");
+        $this->connection->write("CAP REQ :twitch.tv/membership\n");
         foreach ($this->channels as $channel) {
             $this->joinChannel($channel);
         }
-	}
+    }
 
-	protected function pingPong(): void
-	{
+    protected function pingPong(): void
+    {
         $this->emit("PING :tmi.twitch.tv", self::LOG_DEBUG);
-		$this->connection->write("PONG :tmi.twitch.tv\n");
+        $this->connection->write("PONG :tmi.twitch.tv\n");
         $this->emit("PONG :tmi.twitch.tv", self::LOG_DEBUG);
-	}
-	
-	protected function process(string $data): void
-	{
+    }
+
+    protected function process(string $data): void
+    {
         $this->emit('DATA' . $data . '`', self::LOG_DEBUG);
         if (trim($data) === "PING :tmi.twitch.tv") {
-			$this->pingPong();
-			return;
-		}
+            $this->pingPong();
+
+            return;
+        }
         if (false !== strpos($data, 'PRIVMSG')) {
             $response = $this->parseMessage($data);
             if ($response === null) {
                 return;
             }
 
-            if (!empty($this->badwords) && $this->badwordsCheck($response->message)) {
+            if (!empty($this->badWords) && $this->badWordsCheck($response->message)) {
                 $this->ban($response->fromUser);
             }
             $payload = '@' . $response->fromUser . ', ' . $response->message . "\n";
             $this->sendMessage($payload, $response->channel);
-		}
-	}
+        }
+    }
 
-	protected function badwordsCheck($message): bool
-	{
+    protected function badWordsCheck($message): bool
+    {
         $this->emit('[BADWORD CHECK] ' . $message, self::LOG_DEBUG);
-		foreach ($this->badwords as $badword) {
-            if (strpos($message, $badword) !== false) {
-                $this->emit('[BADWORD] ' . $badword, self::LOG_INFO);
-				return true;
-			}
-		}
-		return false;
-	}
-	
+        foreach ($this->badWords as $badWord) {
+            if (strpos($message, $badWord) !== false) {
+                $this->emit('[BADWORD] ' . $badWord, self::LOG_INFO);
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     protected function parseMessage(string $data): ?Response
     {
         $message = ChatMessageParser::parse($data);
 
-        $this->emit('[PRIVMSG] (#' . $message->channel . ') ' . $message->user . ': ' . $message->text, self::LOG_DEBUG);
+        $this->emit(
+            '[PRIVMSG] (#' . $message->channel . ') ' . $message->user . ': ' . $message->text,
+            self::LOG_DEBUG);
 
-        if (!empty($this->badwords) && $this->badwordsCheck($message->text)) {
+        if (!empty($this->badWords) && $this->badWordsCheck($message->text)) {
             $this->ban($message->user);
         }
 
         $commandSymbol = null;
-        foreach($this->commandSymbols as $symbol) {
+        foreach ($this->commandSymbols as $symbol) {
             if (strpos($message->text, $symbol) === 0) {
                 $commandSymbol = $symbol;
                 break;
@@ -314,7 +313,7 @@ class Twitch
         $response = '';
         $command = $this->toCommand($message, $commandSymbol);
         $commandName = $command->command;
-        $this->emit("[COMMAND] `". $commandName ."`", self::LOG_INFO);
+        $this->emit("[COMMAND] `" . $commandName . "`", self::LOG_INFO);
 
         //Public commands
         if (in_array($commandName, $this->functions, true)) {
@@ -349,16 +348,16 @@ class Twitch
         return new Response($message->channel, $message->user, $response);
     }
 
-	/*
-	* This function can double as an event listener
-	*/
-	public function emit(string $string, $level): void
-	{
+    /**
+     * This function can double as an event listener
+     */
+    public function emit(string $string, $level): void
+    {
         if ($level > $this->logLevel) {
             return;
         }
-        echo "[EMIT][".date('H:i:s')."][".self::LOG_LEVEL_LABELS[$level]."] ". $string . PHP_EOL;
-	}
+        echo "[EMIT][" . date('H:i:s') . "][" . self::LOG_LEVEL_LABELS[$level] . "] " . $string . PHP_EOL;
+    }
 
     public function getCommandSymbols(): array
     {

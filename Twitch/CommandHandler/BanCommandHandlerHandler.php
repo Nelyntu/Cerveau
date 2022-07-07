@@ -22,7 +22,7 @@ class BanCommandHandlerHandler implements CommandHandlerInterface
     public function handle(Command $command): ?string
     {
         $reason = '';
-        for ($i=2, $iMax = count($command->arguments); $i< $iMax; $i++) {
+        for ($i = 2, $iMax = count($command->arguments); $i < $iMax; $i++) {
             $reason .= $command->arguments[$i] . ' ';
         }
         $bannedUser = $command->arguments[1];

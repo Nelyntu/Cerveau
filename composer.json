@@ -1,30 +1,34 @@
 {
-    "name": "vzgcoders/twitchphp",
-    "description": "An unofficial API to interact with the IRC chat service used by Twitch.",
-    "authors": [
-        {
-            "name": "Valithor Obsidion",
-            "email": "valzargaming@gmail.com"
-        }
-    ],
-    "require": {
-        "react/event-loop": "^1.1",
-        "react/stream": "^1.1",
-        "react/socket": "^1.5"
-    },
-	"autoload": {
-        "psr-4": {
-			"Twitch\\": "Twitch/"
-        }
-    },
-    "suggest": {
-        "ext-uv": "For a faster, and more performant loop. PHP >=7 only. Preferred.",
-        "ext-libev": "For a faster, and more performant loop",
-        "ext-event": "For a faster, and more performant loop",
-        "ext-mbstring": "For accurate calculations of string length when handling non-english characters."
-    },
-    "scripts": {
-        "cs": ["./vendor/bin/php-cs-fixer fix"],
-        "unit": ["./vendor/bin/phpunit"]
+  "name": "nelyntu/twitchphp",
+  "description": "An unofficial API to interact with the IRC chat service used by Twitch.",
+  "authors": [
+    {
+      "name": "Nelyntu",
+      "email": "le.nelyntu@gmail.com"
     }
+  ],
+  "require": {
+    "react/event-loop": "^1.1",
+    "react/stream": "^1.1",
+    "react/socket": "^1.5"
+  },
+  "autoload": {
+    "psr-4": {
+      "Twitch\\": "Twitch/"
+    }
+  },
+  "suggest": {
+    "ext-uv": "For a faster, and more performant loop. PHP >=7 only. Preferred.",
+    "ext-libev": "For a faster, and more performant loop",
+    "ext-event": "For a faster, and more performant loop",
+    "ext-mbstring": "For accurate calculations of string length when handling non-english characters."
+  },
+  "scripts": {
+    "cs": [
+      "./vendor/bin/php-cs-fixer fix"
+    ],
+    "unit": [
+      "./vendor/bin/phpunit"
+    ]
+  }
 }

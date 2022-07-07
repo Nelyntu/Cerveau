@@ -44,6 +44,7 @@ class HelpCommandHandler implements CommandHandlerInterface
         }
 
         $this->twitch->emit("[COMMANDS] `$commands`", Twitch::LOG_INFO);
+
         return $commands;
     }
 }

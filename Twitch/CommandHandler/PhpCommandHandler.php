@@ -22,6 +22,7 @@ class PhpCommandHandler implements CommandHandlerInterface
     public function handle(Command $command): ?string
     {
         $this->twitch->emit('[PHP]', Twitch::LOG_INFO);
+
         return 'Current PHP version: ' . PHP_VERSION;
     }
 }
