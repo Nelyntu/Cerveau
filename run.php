@@ -14,14 +14,15 @@ $options['responses']['social'] = 'Come follow the magick through several dimens
 $options['responses']['tip'] = 'Wanna help fund the magick?  PayPal - ' . $options['tip']['paypal'] . ' |  CashApp - ' . $options['tip']['cashapp'];
 $options['responses']['discord'] = $options['social']['discord'];
 
+$userList = new \Twitch\UserList($options['nick'], $options['whitelist']);
 $twitch = new Twitch\Twitch($options);
 
-$twitch->addCommand(new \Twitch\CommandHandler\BanCommandHandlerHandler($twitch));
+$twitch->addCommand(new \Twitch\CommandHandler\BanCommandHandlerHandler($twitch, $userList));
 $twitch->addCommand(new \Twitch\CommandHandler\HelpCommandHandler($twitch));
-$twitch->addCommand(new \Twitch\CommandHandler\JoinCommandHandler($twitch));
-$twitch->addCommand(new \Twitch\CommandHandler\LeaveCommandHandler($twitch));
-$twitch->addCommand(new \Twitch\CommandHandler\PhpCommandHandler($twitch));
-$twitch->addCommand(new \Twitch\CommandHandler\SoCommandHandler($twitch));
-$twitch->addCommand(new \Twitch\CommandHandler\StopCommandHandler($twitch));
+$twitch->addCommand(new \Twitch\CommandHandler\JoinCommandHandler($twitch, $userList));
+$twitch->addCommand(new \Twitch\CommandHandler\LeaveCommandHandler($twitch, $userList));
+$twitch->addCommand(new \Twitch\CommandHandler\PhpCommandHandler($twitch, $userList));
+$twitch->addCommand(new \Twitch\CommandHandler\SoCommandHandler($twitch, $userList));
+$twitch->addCommand(new \Twitch\CommandHandler\StopCommandHandler($twitch, $userList));
 
 $twitch->run();

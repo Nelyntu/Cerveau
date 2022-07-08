@@ -241,33 +241,14 @@ class Twitch
             return null;
         }
 
-        $response = '';
         $command = $this->toCommand($message, $commandSymbol);
         $commandName = $command->command;
         $this->emit("[COMMAND] `" . $commandName . "`", self::LOG_INFO);
 
-        //Public commands
-        if (in_array($commandName, $this->functions, true)) {
-            $this->emit('[FUNCTION]', self::LOG_INFO);
-            $response = $this->commands->handle($command);
-        }
-
-        //Whitelisted commands
-        if ($message->user === $this->nick || in_array($message->user, $this->whitelist, true)) {
-            if (in_array($commandName, $this->restrictedFunctions, true)) {
-                $this->emit('[RESTRICTED FUNCTION]', self::LOG_INFO);
-                $response = $this->commands->handle($command);
-            }
-        }
-
-        //Bot owner commands (shares the same username)
-        if ($message->user === $this->nick && in_array($commandName, $this->privateFunctions, true)) {
-            $this->emit('[PRIVATE FUNCTION]', self::LOG_INFO);
-            $response = $this->commands->handle($command);
-        }
+        $response = $this->commands->handle($command);
 
         //Reply with a preset message
-        if (isset($this->responses[$commandName])) {
+        if ($response === null && isset($this->responses[$commandName])) {
             $this->emit('[RESPONSE]', self::LOG_INFO);
             $response = $this->responses[$commandName];
         }
@@ -323,6 +304,11 @@ class Twitch
     public function getIrcApi(): ?IRCApi
     {
         return $this->ircApi;
+    }
+
+    public function getCommands(): CommandDispatcher
+    {
+        return $this->commands;
     }
 
     private function toCommand(Message $message, string $commandSymbol): Command

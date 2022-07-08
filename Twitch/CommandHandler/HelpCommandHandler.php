@@ -7,6 +7,7 @@ use Twitch\Twitch;
 
 class HelpCommandHandler implements CommandHandlerInterface
 {
+    private const COMMAND_NAME = 'help';
     private Twitch $twitch;
 
     public function __construct(Twitch $twitch)
@@ -16,35 +17,31 @@ class HelpCommandHandler implements CommandHandlerInterface
 
     public function supports($name): bool
     {
-        return $name === 'help';
+        return $name === self::COMMAND_NAME;
     }
 
     public function handle(Command $command): ?string
     {
         $commandSymbols = $this->twitch->getCommandSymbols();
-        $responses = $this->twitch->getResponses();
-        $functions = $this->twitch->getFunctions();
-        $restrictedFunctions = $this->twitch->getRestrictedFunctions();
-        $privateFunctions = $this->twitch->getPrivateFunctions();
+        $commands = '[Command Prefixes] ' . implode(', ', $commandSymbols) . ' ';
 
-        $commands = '';
-        if ($commandSymbols) {
-            $commands .= '[Command Prefix] ' . implode(', ', $commandSymbols) . " ";
-        }
+        $authorizedCommands = array_filter($this->twitch->getCommands()->getCommands(), fn(CommandHandlerInterface $commandHandler) => $commandHandler->isAuthorized($command->user));
+        $commandNames = array_map(fn(CommandHandlerInterface $commandHandler) => $commandHandler->getName(), $authorizedCommands);
 
-        $publicCommands = array_merge(array_keys($responses), $functions);
-        if (!empty($publicCommands)) {
-            $commands .= '[Public] ' . implode(', ', $publicCommands) . ' ';
-        }
-        if (!empty($restrictedFunctions)) {
-            $commands .= '[Whitelisted] ' . implode(', ', $restrictedFunctions) . ' ';
-        }
-        if (!empty($privateFunctions)) {
-            $commands .= '[Private] ' . implode(', ', $privateFunctions) . ' ';
-        }
+        $commands .= '[Commands] ' . implode(', ', array_merge(...$commandNames));
 
         $this->twitch->emit("[COMMANDS] `$commands`", Twitch::LOG_INFO);
 
         return $commands;
+    }
+
+    public function isAuthorized($username): bool
+    {
+        return true;
+    }
+
+    public function getName(): array
+    {
+        return [self::COMMAND_NAME];
     }
 }

@@ -53,4 +53,12 @@ class CommandDispatcher
 
         return $response;
     }
+
+    /**
+     * @return CommandHandlerInterface[]
+     */
+    public function getCommands(): array
+    {
+        return $this->commands;
+    }
 }
