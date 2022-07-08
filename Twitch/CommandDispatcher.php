@@ -36,13 +36,12 @@ class CommandDispatcher
 
     public function handle(Message $message): ?string
     {
-        $commandSymbol = $this->findCommandSymbol($message);
+        $command = $this->messageToCommand($message);
 
-        if ($commandSymbol === null) {
+        if ($command === null) {
             return null;
         }
 
-        $command = $this->toCommand($message, $commandSymbol);
         $commandName = $command->command;
         $this->twitch->emit("[COMMAND] `" . $commandName . "`", Twitch::LOG_INFO);
         $this->twitch->emit("[ARGS] " . print_r($command->arguments, true), Twitch::LOG_INFO);
@@ -85,8 +84,14 @@ class CommandDispatcher
         return $commandSymbol;
     }
 
-    private function toCommand(Message $message, string $commandSymbol): Command
+    private function messageToCommand(Message $message): ?Command
     {
+        $commandSymbol = $this->findCommandSymbol($message);
+
+        if ($commandSymbol === null) {
+            return null;
+        }
+
         $withoutSymbol = trim(substr($message->text, strlen($commandSymbol)));
         $dataArr = explode(' ', $withoutSymbol);
         $command = strtolower(trim($dataArr[0]));
