@@ -3,7 +3,9 @@
 namespace Twitch;
 
 use Nelyntu\Logger;
+use React\Promise\PromiseInterface;
 use React\Socket\ConnectionInterface;
+use React\Socket\ConnectorInterface;
 
 class IRCApi
 {
@@ -12,11 +14,20 @@ class IRCApi
     private array $channels = [];
     private string $nick;
     private Logger $logger;
+    private ConnectorInterface $connector;
+    private $serverAdress;
 
-    public function __construct(ConnectionInterface $connection, Logger $logger)
+    public function __construct($serverAddress, ConnectorInterface $connector, Logger $logger)
     {
-        $this->connection = $connection;
         $this->logger = $logger;
+        $this->connector = $connector;
+        $this->serverAdress = $serverAddress;
+    }
+
+    public function connect(): PromiseInterface
+    {
+        return $this->connector->connect($this->serverAdress)
+            ->then(fn(ConnectionInterface $connection) => $this->connection = $connection);
     }
 
     public function init($secret, $nick, array $channels): void

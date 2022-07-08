@@ -14,7 +14,6 @@ use React\EventLoop\Loop;
 use React\EventLoop\LoopInterface;
 use React\Socket\ConnectionInterface;
 use React\Socket\Connector;
-use Twitch\CommandHandler\CommandHandlerInterface;
 
 class Twitch
 {
@@ -26,12 +25,15 @@ class Twitch
     private array $initialChannels;
     /** @var string[] */
     private array $badWords = [];
-    protected Connector $connector;
     protected ?ConnectionInterface $connection = null;
     protected bool $running = false;
     private bool $closing = false;
     private ?IRCApi $ircApi = null;
     private Logger $logger;
+    /**
+     * @var array
+     */
+    private $socketOptions;
 
     public function __construct(Logger $logger, array $options, CommandDispatcher $commandDispatcher)
     {
@@ -51,13 +53,12 @@ class Twitch
             $this->initialChannels = [$options['nick']];
         }
 
-        $this->connector = new Connector($this->loop, $options['socket_options']);
-
         if (is_array($options['badwords'])) {
             $this->badWords = $options['badwords'];
         }
         $this->commands = $commandDispatcher;
         $this->logger = $logger;
+        $this->socketOptions = $options['socket_options'];
     }
 
     public function run(bool $runLoop = true): void
@@ -129,23 +130,25 @@ class Twitch
             return;
         }
 
-        $this->connector->connect("$url:$port")->then(
-            function (ConnectionInterface $connection) {
-                $this->ircApi = new IRCApi($connection, $this->logger);
-                $this->ircApi->init($this->secret, $this->nick, $this->initialChannels);
+        $connector = new Connector($this->loop, $this->socketOptions);
 
-                $connection->on('data', function ($data) {
-                    $this->process($data);
-                });
-                $connection->on('close', function () {
-                    $this->logger->log('[CLOSE]', Logger::LOG_NOTICE);
-                });
-                $this->logger->log('[CONNECTED]', Logger::LOG_NOTICE);
-            },
-            function (Exception $exception) {
-                $this->logger->log('[ERROR] ' . $exception->getMessage(), Logger::LOG_ERROR);
-            }
-        );
+        $this->ircApi = new IRCApi("$url:$port", $connector, $this->logger);
+        $this->ircApi->connect()
+            ->then(
+                function (ConnectionInterface $connection) {
+                    $this->ircApi->init($this->secret, $this->nick, $this->initialChannels);
+                    $connection->on('data', function ($data) {
+                        $this->process($data);
+                    });
+                    $connection->on('close', function () {
+                        $this->logger->log('[CLOSE]', Logger::LOG_NOTICE);
+                    });
+                    $this->logger->log('[CONNECTED]', Logger::LOG_NOTICE);
+                },
+                function (Exception $exception) {
+                    $this->logger->log('[ERROR] ' . $exception->getMessage(), Logger::LOG_ERROR);
+                }
+            );
     }
 
     protected function process(string $data): void
