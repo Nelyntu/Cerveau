@@ -108,9 +108,6 @@ class Twitch
         }
         $options['nick'] = strtolower($options['nick']);
         $options['loop'] = $options['loop'] ?? Loop::get();
-        $options['symbol'] = $options['symbol'] ?? '!';
-        $options['responses'] = $options['responses'] ?? [];
-        $options['functions'] = $options['functions'] ?? [];
 
         return $options;
     }
