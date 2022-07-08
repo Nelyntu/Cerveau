@@ -8,6 +8,7 @@
 
 namespace Twitch;
 
+use Exception;
 use React\EventLoop\Loop;
 use React\EventLoop\LoopInterface;
 use React\Socket\ConnectionInterface;
@@ -36,16 +37,6 @@ class Twitch
     private $commandSymbols;
     /** @var string[] */
     private array $badWords;
-    /** @var string[] */
-    private array $whitelist;
-    /** @var string[] */
-    private array $responses;
-    /** @var string[] */
-    private array $functions;
-    /** @var string[] */
-    private array $restrictedFunctions;
-    /** @var string[] */
-    private array $privateFunctions;
     protected Connector $connector;
     protected ?ConnectionInterface $connection = null;
     protected bool $running = false;
@@ -71,12 +62,6 @@ class Twitch
             $this->initialChannels = [$options['nick']];
         }
         $this->commandSymbols = $options['commandsymbol'] ?? ['!'];
-
-        $this->whitelist = $options['whitelist'];
-        $this->responses = $options['responses'] ?? [];
-        $this->functions = $options['functions'] ?? [];
-        $this->restrictedFunctions = $options['restricted_functions'] ?? [];
-        $this->privateFunctions = $options['private_functions'] ?? [];
 
         $this->logLevel = $options['logLevel'];
 
@@ -173,7 +158,7 @@ class Twitch
                 });
                 $this->emit('[CONNECTED]', Twitch::LOG_NOTICE);
             },
-            function (\Exception $exception) {
+            function (Exception $exception) {
                 $this->emit('[ERROR] ' . $exception->getMessage(), Twitch::LOG_ERROR);
             }
         );
@@ -247,12 +232,6 @@ class Twitch
 
         $response = $this->commands->handle($command);
 
-        //Reply with a preset message
-        if ($response === null && isset($this->responses[$commandName])) {
-            $this->emit('[RESPONSE]', self::LOG_INFO);
-            $response = $this->responses[$commandName];
-        }
-
         if (!$response) {
             return null;
         }
@@ -274,26 +253,6 @@ class Twitch
     public function getCommandSymbols(): array
     {
         return $this->commandSymbols;
-    }
-
-    public function getResponses(): array
-    {
-        return $this->responses;
-    }
-
-    public function getFunctions(): array
-    {
-        return $this->functions;
-    }
-
-    public function getRestrictedFunctions(): array
-    {
-        return $this->restrictedFunctions;
-    }
-
-    public function getPrivateFunctions(): array
-    {
-        return $this->privateFunctions;
     }
 
     public function addCommand(CommandHandlerInterface $command): void
