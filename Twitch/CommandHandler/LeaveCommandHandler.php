@@ -3,19 +3,19 @@
 namespace Twitch\CommandHandler;
 
 use Twitch\Command;
-use Twitch\Twitch;
+use Twitch\IRCApi;
 use Twitch\UserList;
 
 class LeaveCommandHandler implements CommandHandlerInterface
 {
     private const COMMAND_NAME = 'leave';
-    private Twitch $twitch;
     private UserList $userList;
+    private IRCApi $IRCApi;
 
-    public function __construct(Twitch $twitch, UserList $userList)
+    public function __construct(IRCApi $IRCApi, UserList $userList)
     {
-        $this->twitch = $twitch;
         $this->userList = $userList;
+        $this->IRCApi = $IRCApi;
     }
 
     public function supports($name): bool
@@ -25,7 +25,7 @@ class LeaveCommandHandler implements CommandHandlerInterface
 
     public function handle(Command $command): ?string
     {
-        $this->twitch->getIrcApi()->leaveChannel($command->channel);
+        $this->IRCApi->leaveChannel($command->channel);
 
         return null;
     }

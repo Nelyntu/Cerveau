@@ -10,10 +10,8 @@ namespace Twitch;
 
 use Exception;
 use Nelyntu\Logger;
-use React\EventLoop\Loop;
 use React\EventLoop\LoopInterface;
 use React\Socket\ConnectionInterface;
-use React\Socket\Connector;
 
 class Twitch
 {
@@ -28,14 +26,10 @@ class Twitch
     protected ?ConnectionInterface $connection = null;
     protected bool $running = false;
     private bool $closing = false;
-    private ?IRCApi $ircApi = null;
+    private IRCApi $ircApi;
     private Logger $logger;
-    /**
-     * @var array
-     */
-    private $socketOptions;
 
-    public function __construct(Logger $logger, array $options, CommandDispatcher $commandDispatcher)
+    public function __construct(IRCApi $ircApi, Logger $logger, array $options, CommandDispatcher $commandDispatcher, LoopInterface $loop)
     {
         if (PHP_SAPI !== 'cli') {
             trigger_error(
@@ -45,7 +39,7 @@ class Twitch
 
         $options = $this->resolveOptions($options);
 
-        $this->loop = $options['loop'];
+        $this->loop = $loop;
         $this->secret = $options['secret'];
         $this->nick = $options['nick'];
         $this->initialChannels = array_map('strtolower', $options['channels']);
@@ -58,7 +52,7 @@ class Twitch
         }
         $this->commands = $commandDispatcher;
         $this->logger = $logger;
-        $this->socketOptions = $options['socket_options'];
+        $this->ircApi = $ircApi;
     }
 
     public function run(bool $runLoop = true): void
@@ -108,7 +102,6 @@ class Twitch
                 E_USER_ERROR);
         }
         $options['nick'] = strtolower($options['nick']);
-        $options['loop'] = $options['loop'] ?? Loop::get();
 
         return $options;
     }
@@ -120,19 +113,12 @@ class Twitch
      */
     protected function connect(): void
     {
-        $url = 'irc.chat.twitch.tv';
-        $port = '6667';
-        $this->logger->log("[CONNECT] $url:$port", Logger::LOG_INFO);
-
         if ($this->connection) {
             $this->logger->log('[SYMANTICS ERROR] A connection already exists!', Logger::LOG_ERROR);
 
             return;
         }
 
-        $connector = new Connector($this->loop, $this->socketOptions);
-
-        $this->ircApi = new IRCApi("$url:$port", $connector, $this->logger);
         $this->ircApi->connect()
             ->then(
                 function (ConnectionInterface $connection) {
@@ -212,10 +198,5 @@ class Twitch
         }
 
         return new Response($message->channel, $message->user, $response);
-    }
-
-    public function getIrcApi(): ?IRCApi
-    {
-        return $this->ircApi;
     }
 }

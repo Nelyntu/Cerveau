@@ -9,12 +9,10 @@ use Twitch\UserList;
 class PhpCommandHandler implements CommandHandlerInterface
 {
     private const COMMAND_NAME = 'php';
-    private Twitch $twitch;
     private UserList $userList;
 
-    public function __construct(Twitch $twitch, UserList $userList)
+    public function __construct(UserList $userList)
     {
-        $this->twitch = $twitch;
         $this->userList = $userList;
     }
 

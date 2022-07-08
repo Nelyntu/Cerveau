@@ -7,13 +7,11 @@ use Twitch\Twitch;
 
 class ResponseCommandHandler implements CommandHandlerInterface
 {
-    private Twitch $twitch;
     /** @var string[] */
     private array $responses;
 
-    public function __construct(Twitch $twitch, array $responses)
+    public function __construct(array $responses)
     {
-        $this->twitch = $twitch;
         $this->responses = $responses;
     }
 

@@ -3,19 +3,19 @@
 namespace Twitch\CommandHandler;
 
 use Twitch\Command;
-use Twitch\Twitch;
+use Twitch\IRCApi;
 use Twitch\UserList;
 
 class JoinCommandHandler implements CommandHandlerInterface
 {
     private const COMMAND_NAME = 'join';
-    private Twitch $twitch;
     private UserList $userList;
+    private IRCApi $IRCApi;
 
-    public function __construct(Twitch $twitch, UserList $userList)
+    public function __construct(IRCApi $IRCApi, UserList $userList)
     {
-        $this->twitch = $twitch;
         $this->userList = $userList;
+        $this->IRCApi = $IRCApi;
     }
 
     public function supports($name): bool
@@ -29,7 +29,7 @@ class JoinCommandHandler implements CommandHandlerInterface
         if (!$channel) {
             return null;
         }
-        $this->twitch->getIrcApi()->joinChannel($channel);
+        $this->IRCApi->joinChannel($channel);
 
         return null;
     }

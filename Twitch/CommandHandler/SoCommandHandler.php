@@ -10,12 +10,10 @@ use function in_array;
 class SoCommandHandler implements CommandHandlerInterface
 {
     private const COMMAND_NAME = 'so';
-    private Twitch $twitch;
     private UserList $userList;
 
-    public function __construct(Twitch $twitch, UserList $userList)
+    public function __construct(UserList $userList)
     {
-        $this->twitch = $twitch;
         $this->userList = $userList;
     }
 

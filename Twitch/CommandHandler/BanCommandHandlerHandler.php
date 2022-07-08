@@ -3,20 +3,20 @@
 namespace Twitch\CommandHandler;
 
 use Twitch\Command;
-use Twitch\Twitch;
+use Twitch\IRCApi;
 use Twitch\UserList;
 use function in_array;
 
 class BanCommandHandlerHandler implements CommandHandlerInterface
 {
     private const COMMAND_NAME = 'ban';
-    private Twitch $twitch;
     private UserList $userList;
+    private IRCApi $IRCApi;
 
-    public function __construct(Twitch $twitch, UserList $userList)
+    public function __construct(IRCApi $IRCApi, UserList $userList)
     {
-        $this->twitch = $twitch;
         $this->userList = $userList;
+        $this->IRCApi = $IRCApi;
     }
 
     public function supports($name): bool
@@ -31,7 +31,7 @@ class BanCommandHandlerHandler implements CommandHandlerInterface
             $reason .= $command->arguments[$i] . ' ';
         }
         $bannedUser = $command->arguments[1];
-        $this->twitch->getIrcApi()->ban($bannedUser, trim($reason));
+        $this->IRCApi->ban($bannedUser, trim($reason));
 
         return null;
     }

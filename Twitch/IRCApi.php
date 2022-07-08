@@ -15,18 +15,19 @@ class IRCApi
     private string $nick;
     private Logger $logger;
     private ConnectorInterface $connector;
-    private $serverAdress;
+    private string $serverAddress;
 
     public function __construct($serverAddress, ConnectorInterface $connector, Logger $logger)
     {
         $this->logger = $logger;
         $this->connector = $connector;
-        $this->serverAdress = $serverAddress;
+        $this->serverAddress = $serverAddress;
     }
 
     public function connect(): PromiseInterface
     {
-        return $this->connector->connect($this->serverAdress)
+        $this->logger->log("[CONNECT] $this->serverAddress", Logger::LOG_INFO);
+        return $this->connector->connect($this->serverAddress)
             ->then(fn(ConnectionInterface $connection) => $this->connection = $connection);
     }
 
