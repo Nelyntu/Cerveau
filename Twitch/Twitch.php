@@ -193,6 +193,8 @@ class Twitch
                 return;
             }
 
+            // why this code ?
+            // does it ban someone that the bot says bad words ?
             if (!empty($this->badWords) && $this->badWordsCheck($response->message)) {
                 $this->ircApi->ban($response->fromUser);
             }
