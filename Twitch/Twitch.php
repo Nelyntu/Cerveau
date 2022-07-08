@@ -36,7 +36,7 @@ class Twitch
     /** @var string[] */
     private $commandSymbols;
     /** @var string[] */
-    private array $badWords;
+    private array $badWords = [];
     protected Connector $connector;
     protected ?ConnectionInterface $connection = null;
     protected bool $running = false;
@@ -180,7 +180,7 @@ class Twitch
 
             // why this code ?
             // does it ban someone that the bot says bad words ?
-            if (!empty($this->badWords) && $this->badWordsCheck($response->message)) {
+            if ($this->badWordsCheck($response->message)) {
                 $this->ircApi->ban($response->fromUser);
             }
             $payload = '@' . $response->fromUser . ', ' . $response->message . "\n";
@@ -190,10 +190,13 @@ class Twitch
 
     protected function badWordsCheck($message): bool
     {
+        if (empty($this->badWords)) {
+            return false;
+        }
         $this->emit('[BADWORD CHECK] ' . $message, self::LOG_DEBUG);
         foreach ($this->badWords as $badWord) {
             if (strpos($message, $badWord) !== false) {
-                $this->emit('[BADWORD] ' . $badWord, self::LOG_INFO);
+                $this->emit('[BADWORD FOUND] ' . $badWord, self::LOG_INFO);
 
                 return true;
             }
@@ -210,7 +213,7 @@ class Twitch
             '[PRIVMSG] (#' . $message->channel . ') ' . $message->user . ': ' . $message->text,
             self::LOG_DEBUG);
 
-        if (!empty($this->badWords) && $this->badWordsCheck($message->text)) {
+        if ($this->badWordsCheck($message->text)) {
             $this->ircApi->ban($message->user);
         }
 
