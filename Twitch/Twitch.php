@@ -1,10 +1,10 @@
 <?php
 
-/*
-* This file is a part of the TwitchPHP project.
-*
-* Copyright (c) 2021 ValZarGaming <valzargaming@gmail.com>
-*/
+/**
+ * This file is a part of the TwitchPHP project.
+ *
+ * Copyright (c) 2021 ValZarGaming <valzargaming@gmail.com>
+ */
 
 namespace Twitch;
 
@@ -34,8 +34,6 @@ class Twitch
     /** @var string[] */
     private array $initialChannels;
     /** @var string[] */
-    private $commandSymbols;
-    /** @var string[] */
     private array $badWords = [];
     protected Connector $connector;
     protected ?ConnectionInterface $connection = null;
@@ -61,7 +59,6 @@ class Twitch
         if (empty($this->initialChannels)) {
             $this->initialChannels = [$options['nick']];
         }
-        $this->commandSymbols = $options['commandsymbol'] ?? ['!'];
 
         $this->logLevel = $options['logLevel'];
 
@@ -70,7 +67,7 @@ class Twitch
         if (is_array($options['badwords'])) {
             $this->badWords = $options['badwords'];
         }
-        $this->commands = $options['commands'] ?? new CommandDispatcher($this, $this->logLevel);
+        $this->commands = new CommandDispatcher($this, $options['commandsymbol'] ?? ['!'], $this->logLevel);
     }
 
     public function run(bool $runLoop = true): void
@@ -217,23 +214,7 @@ class Twitch
             $this->ircApi->ban($message->user);
         }
 
-        $commandSymbol = null;
-        foreach ($this->commandSymbols as $symbol) {
-            if (strpos($message->text, $symbol) === 0) {
-                $commandSymbol = $symbol;
-                break;
-            }
-        }
-
-        if ($commandSymbol === null) {
-            return null;
-        }
-
-        $command = $this->toCommand($message, $commandSymbol);
-        $commandName = $command->command;
-        $this->emit("[COMMAND] `" . $commandName . "`", self::LOG_INFO);
-
-        $response = $this->commands->handle($command);
+        $response = $this->commands->handle($message);
 
         if (!$response) {
             return null;
@@ -255,7 +236,7 @@ class Twitch
 
     public function getCommandSymbols(): array
     {
-        return $this->commandSymbols;
+        return $this->commands->getCommandSymbols();
     }
 
     public function addCommand(CommandHandlerInterface $command): void
@@ -271,14 +252,5 @@ class Twitch
     public function getCommands(): CommandDispatcher
     {
         return $this->commands;
-    }
-
-    private function toCommand(Message $message, string $commandSymbol): Command
-    {
-        $withoutSymbol = trim(substr($message->text, strlen($commandSymbol)));
-        $dataArr = explode(' ', $withoutSymbol);
-        $command = strtolower(trim($dataArr[0]));
-
-        return new Command($message->channel, $message->user, $command, $dataArr);
     }
 }
