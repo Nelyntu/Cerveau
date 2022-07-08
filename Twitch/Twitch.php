@@ -33,7 +33,7 @@ class Twitch
     private ?IRCApi $ircApi = null;
     private Logger $logger;
 
-    public function __construct(Logger $logger, array $options = [])
+    public function __construct(Logger $logger, array $options, CommandDispatcher $commandDispatcher)
     {
         if (PHP_SAPI !== 'cli') {
             trigger_error(
@@ -56,7 +56,7 @@ class Twitch
         if (is_array($options['badwords'])) {
             $this->badWords = $options['badwords'];
         }
-        $this->commands = new CommandDispatcher($this, $options['commandsymbol'] ?? ['!'], $logger);
+        $this->commands = $commandDispatcher;
         $this->logger = $logger;
     }
 
@@ -214,23 +214,8 @@ class Twitch
         return new Response($message->channel, $message->user, $response);
     }
 
-    public function getCommandSymbols(): array
-    {
-        return $this->commands->getCommandSymbols();
-    }
-
-    public function addCommand(CommandHandlerInterface $command): void
-    {
-        $this->commands->addCommand($command);
-    }
-
     public function getIrcApi(): ?IRCApi
     {
         return $this->ircApi;
-    }
-
-    public function getCommands(): CommandDispatcher
-    {
-        return $this->commands;
     }
 }

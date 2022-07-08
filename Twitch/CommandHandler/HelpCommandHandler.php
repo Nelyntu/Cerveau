@@ -3,16 +3,16 @@
 namespace Twitch\CommandHandler;
 
 use Twitch\Command;
-use Twitch\Twitch;
+use Twitch\CommandDispatcher;
 
 class HelpCommandHandler implements CommandHandlerInterface
 {
     private const COMMAND_NAME = 'help';
-    private Twitch $twitch;
+    private CommandDispatcher $commandDispatcher;
 
-    public function __construct(Twitch $twitch)
+    public function __construct(CommandDispatcher $commandDispatcher)
     {
-        $this->twitch = $twitch;
+        $this->commandDispatcher = $commandDispatcher;
     }
 
     public function supports($name): bool
@@ -22,10 +22,10 @@ class HelpCommandHandler implements CommandHandlerInterface
 
     public function handle(Command $command): ?string
     {
-        $commandSymbols = $this->twitch->getCommandSymbols();
+        $commandSymbols = $this->commandDispatcher->getCommandSymbols();
         $commands = '[Command Prefixes] ' . implode(', ', $commandSymbols) . ' ';
 
-        $authorizedCommands = array_filter($this->twitch->getCommands()->getCommands(), fn(CommandHandlerInterface $commandHandler) => $commandHandler->isAuthorized($command->user));
+        $authorizedCommands = array_filter($this->commandDispatcher->getCommands(), fn(CommandHandlerInterface $commandHandler) => $commandHandler->isAuthorized($command->user));
         $commandNames = array_map(fn(CommandHandlerInterface $commandHandler) => $commandHandler->getName(), $authorizedCommands);
 
         $commands .= '[Commands] ' . implode(', ', array_merge(...$commandNames));

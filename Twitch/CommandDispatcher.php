@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * This file is a part of the TwitchPHP project.
  *
  * Copyright (c) 2021 ValZarGaming <valzargaming@gmail.com>
@@ -16,16 +16,14 @@ use Twitch\CommandHandler\CommandHandlerInterface;
  */
 class CommandDispatcher
 {
-    protected Twitch $twitch;
     /** @var CommandHandlerInterface[] */
     protected array $commands = [];
     /** @var string[] */
     private array $commandSymbols;
     private Logger $logger;
 
-    public function __construct(Twitch $twitch, array $commandSymbols, Logger $logger)
+    public function __construct(array $commandSymbols, Logger $logger)
     {
-        $this->twitch = $twitch;
         $this->commandSymbols = $commandSymbols;
         $this->logger = $logger;
     }
