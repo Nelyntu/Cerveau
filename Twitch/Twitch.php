@@ -9,6 +9,7 @@
 namespace Twitch;
 
 use Exception;
+use Nelyntu\Logger;
 use React\EventLoop\Loop;
 use React\EventLoop\LoopInterface;
 use React\Socket\ConnectionInterface;
@@ -17,16 +18,6 @@ use Twitch\CommandHandler\CommandHandlerInterface;
 
 class Twitch
 {
-    public const LOG_ERROR = -1;
-    public const LOG_NOTICE = 1;
-    public const LOG_INFO = 2;
-    public const LOG_DEBUG = 3;
-    private const LOG_LEVEL_LABELS = [
-        self::LOG_ERROR => 'ERROR',
-        self::LOG_NOTICE => 'NOTICE',
-        self::LOG_INFO => 'INFO',
-        self::LOG_DEBUG => 'DEBUG',
-    ];
     protected LoopInterface $loop;
     protected CommandDispatcher $commands;
     private string $secret;
@@ -39,10 +30,10 @@ class Twitch
     protected ?ConnectionInterface $connection = null;
     protected bool $running = false;
     private bool $closing = false;
-    private int $logLevel;
     private ?IRCApi $ircApi = null;
+    private Logger $logger;
 
-    public function __construct(array $options = [])
+    public function __construct(Logger $logger, array $options = [])
     {
         if (PHP_SAPI !== 'cli') {
             trigger_error(
@@ -60,24 +51,23 @@ class Twitch
             $this->initialChannels = [$options['nick']];
         }
 
-        $this->logLevel = $options['logLevel'];
-
         $this->connector = new Connector($this->loop, $options['socket_options']);
 
         if (is_array($options['badwords'])) {
             $this->badWords = $options['badwords'];
         }
-        $this->commands = new CommandDispatcher($this, $options['commandsymbol'] ?? ['!'], $this->logLevel);
+        $this->commands = new CommandDispatcher($this, $options['commandsymbol'] ?? ['!'], $logger);
+        $this->logger = $logger;
     }
 
     public function run(bool $runLoop = true): void
     {
-        $this->emit('[RUN]', self::LOG_INFO);
+        $this->logger->log('[RUN]', Logger::LOG_INFO);
         if (!$this->running) {
             $this->running = true;
             $this->connect();
         }
-        $this->emit('[LOOP->RUN]', self::LOG_INFO);
+        $this->logger->log('[LOOP->RUN]', Logger::LOG_INFO);
         if ($runLoop) {
             $this->loop->run();
         }
@@ -85,14 +75,14 @@ class Twitch
 
     public function close(bool $closeLoop = true): void
     {
-        $this->emit('[CLOSE]', self::LOG_INFO);
+        $this->logger->log('[CLOSE]', Logger::LOG_INFO);
         if ($this->running) {
             $this->running = false;
             $this->ircApi->leaveChannels();
         }
         if ($closeLoop && !$this->closing) {
             $this->closing = true;
-            $this->emit('[LOOP->STOP]', self::LOG_INFO);
+            $this->logger->log('[LOOP->STOP]', Logger::LOG_INFO);
 
             $this->loop->addTimer(3, function () {
                 $this->closing = false;
@@ -134,41 +124,42 @@ class Twitch
     {
         $url = 'irc.chat.twitch.tv';
         $port = '6667';
-        $this->emit("[CONNECT] $url:$port", self::LOG_INFO);
+        $this->logger->log("[CONNECT] $url:$port", Logger::LOG_INFO);
 
         if ($this->connection) {
-            $this->emit('[SYMANTICS ERROR] A connection already exists!', self::LOG_ERROR);
+            $this->logger->log('[SYMANTICS ERROR] A connection already exists!', Logger::LOG_ERROR);
 
             return;
         }
 
         $this->connector->connect("$url:$port")->then(
             function (ConnectionInterface $connection) {
-                $this->ircApi = new IRCApi($connection, $this);
+                $this->ircApi = new IRCApi($connection, $this->logger);
                 $this->ircApi->init($this->secret, $this->nick, $this->initialChannels);
 
                 $connection->on('data', function ($data) {
                     $this->process($data);
                 });
                 $connection->on('close', function () {
-                    $this->emit('[CLOSE]', Twitch::LOG_NOTICE);
+                    $this->logger->log('[CLOSE]', Logger::LOG_NOTICE);
                 });
-                $this->emit('[CONNECTED]', Twitch::LOG_NOTICE);
+                $this->logger->log('[CONNECTED]', Logger::LOG_NOTICE);
             },
             function (Exception $exception) {
-                $this->emit('[ERROR] ' . $exception->getMessage(), Twitch::LOG_ERROR);
+                $this->logger->log('[ERROR] ' . $exception->getMessage(), Logger::LOG_ERROR);
             }
         );
     }
 
     protected function process(string $data): void
     {
-        $this->emit('DATA' . $data . '`', self::LOG_DEBUG);
+        $this->logger->log('DATA' . $data . '`', Logger::LOG_DEBUG);
         if (trim($data) === "PING :tmi.twitch.tv") {
             $this->ircApi->pingPong();
 
             return;
         }
+
         if (false !== strpos($data, 'PRIVMSG')) {
             $response = $this->parseMessage($data);
             if ($response === null) {
@@ -190,10 +181,10 @@ class Twitch
         if (empty($this->badWords)) {
             return false;
         }
-        $this->emit('[BADWORD CHECK] ' . $message, self::LOG_DEBUG);
+        $this->logger->log('[BADWORD CHECK] ' . $message, Logger::LOG_DEBUG);
         foreach ($this->badWords as $badWord) {
             if (strpos($message, $badWord) !== false) {
-                $this->emit('[BADWORD FOUND] ' . $badWord, self::LOG_INFO);
+                $this->logger->log('[BADWORD FOUND] ' . $badWord, Logger::LOG_INFO);
 
                 return true;
             }
@@ -206,9 +197,9 @@ class Twitch
     {
         $message = ChatMessageParser::parse($data);
 
-        $this->emit(
+        $this->logger->log(
             '[PRIVMSG] (#' . $message->channel . ') ' . $message->user . ': ' . $message->text,
-            self::LOG_DEBUG);
+            Logger::LOG_DEBUG);
 
         if ($this->badWordsCheck($message->text)) {
             $this->ircApi->ban($message->user);
@@ -221,17 +212,6 @@ class Twitch
         }
 
         return new Response($message->channel, $message->user, $response);
-    }
-
-    /**
-     * This function can double as an event listener
-     */
-    public function emit(string $string, $level): void
-    {
-        if ($level > $this->logLevel) {
-            return;
-        }
-        echo "[EMIT][" . date('H:i:s') . "][" . self::LOG_LEVEL_LABELS[$level] . "] " . $string . PHP_EOL;
     }
 
     public function getCommandSymbols(): array

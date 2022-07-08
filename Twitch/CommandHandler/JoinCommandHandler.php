@@ -26,7 +26,6 @@ class JoinCommandHandler implements CommandHandlerInterface
     public function handle(Command $command): ?string
     {
         $channel = $command->arguments[1];
-        $this->twitch->emit('[JOIN]' . $channel, Twitch::LOG_INFO);
         if (!$channel) {
             return null;
         }

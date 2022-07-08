@@ -24,8 +24,6 @@ class ResponseCommandHandler implements CommandHandlerInterface
 
     public function handle(Command $command): ?string
     {
-        $this->twitch->emit('[RESPONSE]', Twitch::LOG_INFO);
-
         return $this->responses[$command->command];
     }
 

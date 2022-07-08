@@ -2,25 +2,26 @@
 
 namespace Twitch;
 
+use Nelyntu\Logger;
 use React\Socket\ConnectionInterface;
 
 class IRCApi
 {
     private ConnectionInterface $connection;
-    private Twitch $twitch;
     /** @var string[] */
     private array $channels = [];
     private string $nick;
+    private Logger $logger;
 
-    public function __construct(ConnectionInterface $connection, Twitch $twitch)
+    public function __construct(ConnectionInterface $connection, Logger $logger)
     {
         $this->connection = $connection;
-        $this->twitch = $twitch;
+        $this->logger = $logger;
     }
 
     public function init($secret, $nick, array $channels): void
     {
-        $this->emit('[INIT IRC]', Twitch::LOG_INFO);
+        $this->emit('[INIT IRC]', Logger::LOG_INFO);
         $this->connection->write("PASS " . $secret . "\n");
         $this->connection->write("NICK " . $nick . "\n");
         $this->connection->write("CAP REQ :twitch.tv/membership\n");
@@ -37,13 +38,13 @@ class IRCApi
             return;
         }
 
-        $this->connection->write("PRIVMSG #" . $channel . " :" . $data . "\n");
-        $this->emit('[REPLY] #' . $channel . ' - ' . $data, Twitch::LOG_NOTICE);
+        $this->connection->write('PRIVMSG #' . $channel . " :" . $data . "\n");
+        $this->emit('[REPLY] #' . $channel . ' - ' . $data, Logger::LOG_NOTICE);
     }
 
     public function joinChannel(string $string = ""): void
     {
-        $this->emit('[VERBOSE] [JOIN CHANNEL] `' . $string . '`', Twitch::LOG_INFO);
+        $this->emit('[VERBOSE] [JOIN CHANNEL] `' . $string . '`', Logger::LOG_INFO);
         if (!isset($this->connection) || !$string) {
             return;
         }
@@ -63,7 +64,7 @@ class IRCApi
     public function leaveChannel(string $channelToLeave): void
     {
         $channelToLeave = strtolower($channelToLeave);
-        $this->emit('[VERBOSE] [LEAVE CHANNEL] `' . $channelToLeave . '`', Twitch::LOG_INFO);
+        $this->emit('[VERBOSE] [LEAVE CHANNEL] `' . $channelToLeave . '`', Logger::LOG_INFO);
         if (!isset($this->connection)) {
             return;
         }
@@ -77,7 +78,7 @@ class IRCApi
 
     public function ban($username, $reason = ''): void
     {
-        $this->emit('[BAN] ' . $username . ' - ' . $reason, Twitch::LOG_INFO);
+        $this->emit('[BAN] ' . $username . ' - ' . $reason, Logger::LOG_INFO);
         if ($username === $this->nick || in_array($username, $this->channels, true)) {
             return;
         }
@@ -86,9 +87,9 @@ class IRCApi
 
     public function pingPong(): void
     {
-        $this->emit("PING :tmi.twitch.tv", Twitch::LOG_DEBUG);
+        $this->emit("PING :tmi.twitch.tv", Logger::LOG_DEBUG);
         $this->connection->write("PONG :tmi.twitch.tv\n");
-        $this->emit("PONG :tmi.twitch.tv", Twitch::LOG_DEBUG);
+        $this->emit("PONG :tmi.twitch.tv", Logger::LOG_DEBUG);
     }
 
     public function leaveChannels(): void
@@ -100,6 +101,6 @@ class IRCApi
 
     protected function emit($message, $logLevel): void
     {
-        $this->twitch->emit($message, $logLevel);
+        $this->logger->log($message, $logLevel);
     }
 }

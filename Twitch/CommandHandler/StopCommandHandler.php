@@ -25,7 +25,6 @@ class StopCommandHandler implements CommandHandlerInterface
 
     public function handle(Command $command): ?string
     {
-        $this->twitch->emit('[STOP]', Twitch::LOG_INFO);
         $this->twitch->close();
 
         return null;

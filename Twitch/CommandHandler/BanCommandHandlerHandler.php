@@ -31,7 +31,6 @@ class BanCommandHandlerHandler implements CommandHandlerInterface
             $reason .= $command->arguments[$i] . ' ';
         }
         $bannedUser = $command->arguments[1];
-        $this->twitch->emit('[BAN] ' . $bannedUser . " $reason", Twitch::LOG_INFO);
         $this->twitch->getIrcApi()->ban($bannedUser, trim($reason));
 
         return null;

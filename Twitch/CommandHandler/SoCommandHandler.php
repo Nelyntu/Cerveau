@@ -27,7 +27,6 @@ class SoCommandHandler implements CommandHandlerInterface
     public function handle(Command $command): ?string
     {
         $userToSO = $command->arguments[1];
-        $this->twitch->emit('[SO] ' . $userToSO, Twitch::LOG_INFO);
         if (!$userToSO) {
             return null;
         }

@@ -30,8 +30,6 @@ class HelpCommandHandler implements CommandHandlerInterface
 
         $commands .= '[Commands] ' . implode(', ', array_merge(...$commandNames));
 
-        $this->twitch->emit("[COMMANDS] `$commands`", Twitch::LOG_INFO);
-
         return $commands;
     }
 
