@@ -36,8 +36,17 @@ class Twitch
                 'TwitchPHP will not run on a webserver. Please use PHP CLI to run a TwitchPHP self-bot.',
                 E_USER_ERROR);
         }
-
-        $options = $this->resolveOptions($options);
+        if (!$options['secret']) {
+            trigger_error(
+                'TwitchPHP requires a client secret to connect. Get your Chat OAuth Password here => https://twitchapps.com/tmi/',
+                E_USER_ERROR);
+        }
+        if (!$options['nick']) {
+            trigger_error(
+                'TwitchPHP requires a client username to connect. This should be the same username you use to log in.',
+                E_USER_ERROR);
+        }
+        $options['nick'] = strtolower($options['nick']);
 
         $this->loop = $loop;
         $this->secret = $options['secret'];
@@ -84,26 +93,6 @@ class Twitch
                 $this->loop->stop();
             });
         }
-    }
-
-    /**
-     * Attempt to catch errors with the user-provided $options early
-     */
-    protected function resolveOptions(array $options = []): array
-    {
-        if (!$options['secret']) {
-            trigger_error(
-                'TwitchPHP requires a client secret to connect. Get your Chat OAuth Password here => https://twitchapps.com/tmi/',
-                E_USER_ERROR);
-        }
-        if (!$options['nick']) {
-            trigger_error(
-                'TwitchPHP requires a client username to connect. This should be the same username you use to log in.',
-                E_USER_ERROR);
-        }
-        $options['nick'] = strtolower($options['nick']);
-
-        return $options;
     }
 
     /**
