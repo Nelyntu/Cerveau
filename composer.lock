@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "718e6e47ecbdc98c92965bf83f2e0a94",
+    "content-hash": "3db4dead4b4cdf2f26de66afc6a539b8",
     "packages": [
         {
             "name": "evenement/evenement",
