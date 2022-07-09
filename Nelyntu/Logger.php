@@ -27,6 +27,6 @@ class Logger
         if ($level > $this->logLevel) {
             return;
         }
-        echo "[EMIT][" . date('H:i:s') . "][" . self::LOG_LEVEL_LABELS[$level] . "] " . $string . PHP_EOL;
+        echo "[EMIT][" . date('H:i:s') . "][" . self::LOG_LEVEL_LABELS[$level] . "]" . $string . PHP_EOL;
     }
 }

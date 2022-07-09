@@ -42,8 +42,8 @@ class CommandDispatcher
         }
 
         $commandName = $command->command;
-        $this->logger->log("[COMMAND] `" . $commandName . "`", Logger::LOG_INFO);
-        $this->logger->log("[ARGS] " . implode(' ', $command->arguments), Logger::LOG_INFO);
+        $this->logger->log("[CD][COMMAND] `" . $commandName . "`", Logger::LOG_INFO);
+        $this->logger->log("[CD][ARGS] " . implode(' ', $command->arguments), Logger::LOG_INFO);
 
         $response = null;
         $found = false;
@@ -57,7 +57,7 @@ class CommandDispatcher
         }
 
         if (!$found) {
-            $this->logger->log("[HANDLE COMMAND] `$commandName` NOT HANDLED", Logger::LOG_INFO);
+            $this->logger->log("[CD][COMMAND] `$commandName` NOT HANDLED", Logger::LOG_INFO);
         }
 
         return $response;

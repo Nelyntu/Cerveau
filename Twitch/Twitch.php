@@ -57,12 +57,12 @@ class Twitch
 
     public function run(bool $runLoop = true): void
     {
-        $this->logger->log('[RUN]', Logger::LOG_INFO);
+        $this->logger->log('[T][RUN]', Logger::LOG_INFO);
         if (!$this->running) {
             $this->running = true;
             $this->connect();
         }
-        $this->logger->log('[LOOP->RUN]', Logger::LOG_INFO);
+        $this->logger->log('[T][LOOP->RUN]', Logger::LOG_INFO);
         if ($runLoop) {
             $this->loop->run();
         }
@@ -70,14 +70,14 @@ class Twitch
 
     public function close(bool $closeLoop = true): void
     {
-        $this->logger->log('[CLOSE]', Logger::LOG_INFO);
+        $this->logger->log('[T][CLOSE]', Logger::LOG_INFO);
         if ($this->running) {
             $this->running = false;
             $this->ircApi->leaveChannels();
         }
         if ($closeLoop && !$this->closing) {
             $this->closing = true;
-            $this->logger->log('[LOOP->STOP]', Logger::LOG_INFO);
+            $this->logger->log('[T][LOOP->STOP]', Logger::LOG_INFO);
 
             $this->loop->addTimer(3, function () {
                 $this->closing = false;
@@ -114,7 +114,7 @@ class Twitch
     protected function connect(): void
     {
         if ($this->connection) {
-            $this->logger->log('[SYMANTICS ERROR] A connection already exists!', Logger::LOG_ERROR);
+            $this->logger->log('[T][SYMANTICS ERROR] A connection already exists!', Logger::LOG_ERROR);
 
             return;
         }
@@ -127,21 +127,21 @@ class Twitch
                         $this->process($data);
                     });
                     $connection->on('close', function () {
-                        $this->logger->log('[CLOSE]', Logger::LOG_NOTICE);
+                        $this->logger->log('[T][CLOSE]', Logger::LOG_NOTICE);
                     });
-                    $this->logger->log('[CONNECTED]', Logger::LOG_NOTICE);
+                    $this->logger->log('[T][CONNECTED]', Logger::LOG_NOTICE);
                 },
                 function (Exception $exception) {
-                    $this->logger->log('[ERROR] ' . $exception->getMessage(), Logger::LOG_ERROR);
+                    $this->logger->log('[T][ERROR] ' . $exception->getMessage(), Logger::LOG_ERROR);
                 }
             );
     }
 
     protected function process(string $data): void
     {
-        $this->logger->log('DATA' . $data . '`', Logger::LOG_DEBUG);
+        $this->logger->log('[T]DATA: `' . $data . '`', Logger::LOG_DEBUG);
         if (trim($data) === "PING :tmi.twitch.tv") {
-            $this->ircApi->pingPong();
+            $this->ircApi->pong();
 
             return;
         }
@@ -167,10 +167,10 @@ class Twitch
         if (empty($this->badWords)) {
             return false;
         }
-        $this->logger->log('[BADWORD CHECK] ' . $message, Logger::LOG_DEBUG);
+        $this->logger->log('[T][BADWORD CHECK] ' . $message, Logger::LOG_DEBUG);
         foreach ($this->badWords as $badWord) {
             if (strpos($message, $badWord) !== false) {
-                $this->logger->log('[BADWORD FOUND] ' . $badWord, Logger::LOG_INFO);
+                $this->logger->log('[T][BADWORD FOUND] ' . $badWord, Logger::LOG_INFO);
 
                 return true;
             }
