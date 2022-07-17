@@ -89,23 +89,6 @@ $options = [
 		'Buy followers, primes and viewers',
 		'bigfollows . com',
 	],
-	'responses' => [ // Whenever a message is sent matching a key and prefixed with a command symbol, reply with the defined value
-		'ping' => 'Pong!',
-		'github' => 'https://github.com/VZGCoders/TwitchPHP',
-		'discord' => 'https://discord.gg/yXJVTQNh9e',
-	],
-	'functions' => [ // Enabled functions usable by anyone
-		'help', // Send a list of commands as a chat message
-	],
-	'restricted_functions' => [ // Enabled functions usable only by whitelisted users
-		'join', //Joins another user's channel
-		'leave', //Leave the current user's channel
-		'ban', // Ban someone from the channel, takes a username and an optional reason
-	],
-	'private_functions' => [ // Enabled functions usable only by the bot owner sharing the same username as the bot
-		'stop', //Kills the bot
-		'php', //Outputs the current version of PHP as a message
-	],
 ];
 //include 'commands.php';
 //$options['commands'] => $commands; // Import your own Twitch/Commands object to add additional functions

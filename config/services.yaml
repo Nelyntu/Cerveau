@@ -1,0 +1,97 @@
+# This file is the entry point to configure your own services.
+# Files in the packages/ subdirectory configure your dependencies.
+
+# Put parameters here that don't need to change on each machine where the app is deployed
+# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
+parameters:
+    cerveau.channels: ['nelyntu_', 'revingbell']
+    cerveau.badWords:
+        - 'Buy followers, primes and viewers'
+        - 'bigfollows . com'
+        - 'stearncomminuty'
+    cerveau.restrictedUsers:
+        - 'latnel'
+        - 'yanphegor'
+    cerveau.streamer.nickname: 'nelyntu_'
+
+services:
+    # default configuration for services in *this* file
+    _defaults:
+        autowire: true      # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+        bind:
+            React\EventLoop\LoopInterface: '@app.loop'
+            React\Socket\ConnectorInterface: '@app.connector'
+
+    # makes classes in src/ available to be used as services
+    # this creates a service per class whose id is the fully-qualified class name
+    App\:
+        resource: '../src/App'
+        exclude:
+            - '../src/App/DependencyInjection/'
+            - '../src/App/Entity/'
+            - '../src/App/Kernel.php'
+
+    Twitch\:
+        resource: '../src/Twitch'
+
+    Nelyntu\:
+        resource: '../src/Nelyntu'
+
+    # add more service definitions when explicit configuration is needed
+    # please note that last definitions always *replace* previous ones
+
+    app.loop:
+        class: React\EventLoop\LoopInterface
+        factory: ['React\EventLoop\Loop', 'get']
+
+    Nelyntu\Logger:
+        arguments:
+            $logLevel: !php/const Nelyntu\Logger::LOG_DEBUG
+
+    app.connector:
+        class: React\Socket\Connector
+        arguments:
+            $context: []
+            $loop: '@app.loop'
+
+    React\Socket\ConnectorInterface:
+        class: React\Socket\Connector
+
+    Twitch\CommandDispatcher:
+        arguments:
+            $commandSymbols: ['!']
+        calls:
+            - addCommand: ['@Twitch\CommandHandler\BanCommandHandlerHandler']
+            - addCommand: ['@Twitch\CommandHandler\HelpCommandHandler']
+            - addCommand: ['@Twitch\CommandHandler\JoinCommandHandler']
+            - addCommand: ['@Twitch\CommandHandler\LeaveCommandHandler']
+            - addCommand: ['@Twitch\CommandHandler\PhpCommandHandler']
+            - addCommand: ['@Twitch\CommandHandler\SoCommandHandler']
+            - addCommand: ['@Twitch\CommandHandler\StopCommandHandler']
+            - addCommand: ['@Twitch\CommandHandler\ResponseCommandHandler']
+
+    Twitch\CommandHandler\ResponseCommandHandler:
+        arguments:
+            $responses:
+                ping: Pong!
+                github: https://github.com/nelyntu/Cerveau
+                lurk: You have said the magick word to make yourself invisible to all eyes upon you, allowing you to fade into the shadows.
+                return: You have rolled a Nat 1, clearing your invisibility buff from earlier. You might want to roll for initiative…
+
+    Twitch\IRCApi:
+        arguments:
+            $serverAddress: 'irc.chat.twitch.tv:6667'
+
+    Twitch\Twitch:
+        arguments:
+            $options:
+                badwords: '%cerveau.badWords%'
+                channels: '%cerveau.channels%'
+                nick: '%cerveau.streamer.nickname%'
+                secret: "%env(secret)%"
+
+    Twitch\UserList:
+        arguments:
+            $streamer: '%cerveau.streamer.nickname%'
+            $restrictedUsers: '%cerveau.restrictedUsers%'
