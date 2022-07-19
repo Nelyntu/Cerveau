@@ -9,7 +9,7 @@
 namespace Twitch;
 
 use Exception;
-use Nelyntu\Logger;
+use Psr\Log\LoggerInterface;
 use React\EventLoop\LoopInterface;
 use React\Socket\ConnectionInterface;
 
@@ -27,9 +27,9 @@ class Twitch
     protected bool $running = false;
     private bool $closing = false;
     private IRCApi $ircApi;
-    private Logger $logger;
+    private LoggerInterface $logger;
 
-    public function __construct(IRCApi $ircApi, Logger $logger, array $options, CommandDispatcher $commandDispatcher, LoopInterface $loop)
+    public function __construct(IRCApi $ircApi, LoggerInterface $logger, array $options, CommandDispatcher $commandDispatcher, LoopInterface $loop)
     {
         if (PHP_SAPI !== 'cli') {
             trigger_error(
@@ -66,12 +66,12 @@ class Twitch
 
     public function run(bool $runLoop = true): void
     {
-        $this->logger->log('[T][RUN]', Logger::LOG_INFO);
+        $this->logger->info('[T][RUN]');
         if (!$this->running) {
             $this->running = true;
             $this->connect();
         }
-        $this->logger->log('[T][LOOP->RUN]', Logger::LOG_INFO);
+        $this->logger->info('[T][LOOP->RUN]');
         if ($runLoop) {
             $this->loop->run();
         }
@@ -79,14 +79,14 @@ class Twitch
 
     public function close(bool $closeLoop = true): void
     {
-        $this->logger->log('[T][CLOSE]', Logger::LOG_INFO);
+        $this->logger->info('[T][CLOSE]');
         if ($this->running) {
             $this->running = false;
             $this->ircApi->leaveChannels();
         }
         if ($closeLoop && !$this->closing) {
             $this->closing = true;
-            $this->logger->log('[T][LOOP->STOP]', Logger::LOG_INFO);
+            $this->logger->info('[T][LOOP->STOP]');
 
             $this->loop->addTimer(3, function () {
                 $this->closing = false;
@@ -103,7 +103,7 @@ class Twitch
     protected function connect(): void
     {
         if ($this->connection) {
-            $this->logger->log('[T][SYMANTICS ERROR] A connection already exists!', Logger::LOG_ERROR);
+            $this->logger->error('[T][SYMANTICS ERROR] A connection already exists!');
 
             return;
         }
@@ -116,19 +116,19 @@ class Twitch
                         $this->process($data);
                     });
                     $connection->on('close', function () {
-                        $this->logger->log('[T][CLOSE]', Logger::LOG_NOTICE);
+                        $this->logger->info('[T][CLOSE]');
                     });
-                    $this->logger->log('[T][CONNECTED]', Logger::LOG_NOTICE);
+                    $this->logger->info('[T][CONNECTED]');
                 },
                 function (Exception $exception) {
-                    $this->logger->log('[T][ERROR] ' . $exception->getMessage(), Logger::LOG_ERROR);
+                    $this->logger->error('[T][ERROR] ' . $exception->getMessage());
                 }
             );
     }
 
     protected function process(string $data): void
     {
-        $this->logger->log('[T]DATA: `' . $data . '`', Logger::LOG_DEBUG);
+        $this->logger->debug('[T]DATA: `' . $data . '`');
         if (trim($data) === "PING :tmi.twitch.tv") {
             $this->ircApi->pong();
 
@@ -156,10 +156,10 @@ class Twitch
         if (empty($this->badWords)) {
             return false;
         }
-        $this->logger->log('[T][BADWORD CHECK] ' . $message, Logger::LOG_DEBUG);
+        $this->logger->debug('[T][BADWORD CHECK] ' . $message);
         foreach ($this->badWords as $badWord) {
             if (strpos($message, $badWord) !== false) {
-                $this->logger->log('[T][BADWORD FOUND] ' . $badWord, Logger::LOG_INFO);
+                $this->logger->info('[T][BADWORD FOUND] ' . $badWord);
 
                 return true;
             }
@@ -172,9 +172,7 @@ class Twitch
     {
         $message = ChatMessageParser::parse($data);
 
-        $this->logger->log(
-            '[PRIVMSG] (#' . $message->channel . ') ' . $message->user . ': ' . $message->text,
-            Logger::LOG_DEBUG);
+        $this->logger->debug('[PRIVMSG] (#' . $message->channel . ') ' . $message->user . ': ' . $message->text);
 
         if ($this->badWordsCheck($message->text)) {
             $this->ircApi->ban($message->user);

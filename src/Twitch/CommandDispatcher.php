@@ -8,7 +8,7 @@
 
 namespace Twitch;
 
-use Nelyntu\Logger;
+use Psr\Log\LoggerInterface;
 use Twitch\CommandHandler\CommandHandlerInterface;
 
 /**
@@ -20,9 +20,9 @@ class CommandDispatcher
     protected array $commands = [];
     /** @var string[] */
     private array $commandSymbols;
-    private Logger $logger;
+    private LoggerInterface $logger;
 
-    public function __construct(array $commandSymbols, Logger $logger)
+    public function __construct(array $commandSymbols, LoggerInterface $logger)
     {
         $this->commandSymbols = $commandSymbols;
         $this->logger = $logger;
@@ -42,8 +42,8 @@ class CommandDispatcher
         }
 
         $commandName = $command->command;
-        $this->logger->log("[CD][COMMAND] `" . $commandName . "`", Logger::LOG_INFO);
-        $this->logger->log("[CD][ARGS] " . implode(' ', $command->arguments), Logger::LOG_INFO);
+        $this->logger->info("[CD][COMMAND] `" . $commandName . "`");
+        $this->logger->info("[CD][ARGS] " . implode(' ', $command->arguments));
 
         $response = null;
         $found = false;
@@ -57,7 +57,7 @@ class CommandDispatcher
         }
 
         if (!$found) {
-            $this->logger->log("[CD][COMMAND] `$commandName` NOT HANDLED", Logger::LOG_INFO);
+            $this->logger->info("[CD][COMMAND] `$commandName` NOT HANDLED");
         }
 
         return $response;

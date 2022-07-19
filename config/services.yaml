@@ -35,19 +35,12 @@ services:
     Twitch\:
         resource: '../src/Twitch'
 
-    Nelyntu\:
-        resource: '../src/Nelyntu'
-
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 
     app.loop:
         class: React\EventLoop\LoopInterface
         factory: ['React\EventLoop\Loop', 'get']
-
-    Nelyntu\Logger:
-        arguments:
-            $logLevel: !php/const Nelyntu\Logger::LOG_DEBUG
 
     app.connector:
         class: React\Socket\Connector
