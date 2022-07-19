@@ -1,11 +1,5 @@
 <?php
 
-/**
- * This file is a part of the TwitchPHP project.
- *
- * Copyright (c) 2021 ValZarGaming <valzargaming@gmail.com>
- */
-
 namespace Twitch;
 
 use Exception;
@@ -33,17 +27,17 @@ class Twitch
     {
         if (PHP_SAPI !== 'cli') {
             trigger_error(
-                'TwitchPHP will not run on a webserver. Please use PHP CLI to run a TwitchPHP self-bot.',
+                'Cerveau will not run on a webserver. Please use PHP CLI to run a Cerveau self-bot.',
                 E_USER_ERROR);
         }
         if (!$options['secret']) {
             trigger_error(
-                'TwitchPHP requires a client secret to connect. Get your Chat OAuth Password here => https://twitchapps.com/tmi/',
+                'Cerveau requires a client secret to connect. Get your Chat OAuth Password here => https://twitchapps.com/tmi/',
                 E_USER_ERROR);
         }
         if (!$options['nick']) {
             trigger_error(
-                'TwitchPHP requires a client username to connect. This should be the same username you use to log in.',
+                'Cerveau requires a client username to connect. This should be the same username you use to log in.',
                 E_USER_ERROR);
         }
         $options['nick'] = strtolower($options['nick']);

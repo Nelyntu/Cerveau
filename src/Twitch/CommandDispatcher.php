@@ -1,11 +1,5 @@
 <?php
 
-/**
- * This file is a part of the TwitchPHP project.
- *
- * Copyright (c) 2021 ValZarGaming <valzargaming@gmail.com>
- */
-
 namespace Twitch;
 
 use Psr\Log\LoggerInterface;
