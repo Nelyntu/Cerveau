@@ -37,7 +37,7 @@ class CommandDispatcher
 
         $commandName = $command->command;
         $this->logger->info("[CD][COMMAND] `" . $commandName . "`");
-        $this->logger->info("[CD][ARGS] " . implode(' ', $command->arguments));
+        $this->logger->info("[CD][ARGS] " . $command->arguments->text);
 
         $response = null;
         $found = false;
@@ -67,14 +67,13 @@ class CommandDispatcher
 
     public function findCommandSymbol(Message $message): ?string
     {
-        $commandSymbol = null;
         foreach ($this->commandSymbols as $symbol) {
-            if (strpos($message->text, $symbol) === 0) {
-                $commandSymbol = $symbol;
-                break;
+            if (str_starts_with($message->text, $symbol)) {
+                return $symbol;
             }
         }
-        return $commandSymbol;
+
+        return null;
     }
 
     private function messageToCommand(Message $message): ?Command
@@ -86,10 +85,17 @@ class CommandDispatcher
         }
 
         $withoutSymbol = trim(substr($message->text, strlen($commandSymbol)));
-        $dataArr = explode(' ', $withoutSymbol);
-        $command = strtolower(trim($dataArr[0]));
+        preg_match('/^([^ ]+)(?: +(.*))?$/', $withoutSymbol, $matches);
 
-        return new Command($message->channel, $message->user, $command, $dataArr);
+        $command = $matches[1] ?? null;
+
+        if ($command === null) {
+            return null;
+        }
+
+        $arguments = $matches[2] ?? null;
+
+        return new Command($message->channel, $message->user, $command, Arguments::createFrom($arguments));
     }
 
     public function getCommandSymbols(): array

@@ -22,11 +22,10 @@ class SmallerBiggerCommand implements CommandHandlerInterface
 
     public function handle(Command $command): ?string
     {
-        if (!array_key_exists(1, $command->arguments)) {
+        $suggestedValue = $command->arguments->firstArgument;
+        if ($suggestedValue === null) {
             return 'tu dois proposer un nombre. Par exemple : !sb 42';
         }
-
-        $suggestedValue = $command->arguments[1];
 
         if (!is_numeric($suggestedValue)) {
             return 'c\'est un nombre qu\'il faut proposer 😅. Tu sais ... des chiffres ... 😎';
@@ -38,6 +37,7 @@ class SmallerBiggerCommand implements CommandHandlerInterface
         $coolDownItemCache = $this->cache->getItem('cerveau:command:sb:cooldown:' . $command->user);
         if ($coolDownItemCache->isHit()) {
             $remainingCoolDownTime = (int)($coolDownItemCache->get() - microtime(true));
+
             return 'TU TE CALMES ! Tu peux retenter dans ' . $remainingCoolDownTime . 's';
         }
         $coolDownItemCache->expiresAfter(30);

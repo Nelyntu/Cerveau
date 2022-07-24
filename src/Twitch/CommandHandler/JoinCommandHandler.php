@@ -25,8 +25,8 @@ class JoinCommandHandler implements CommandHandlerInterface
 
     public function handle(Command $command): ?string
     {
-        $channel = $command->arguments[1];
-        if (!$channel) {
+        $channel = $command->arguments->firstArgument;
+        if ($channel === null) {
             return null;
         }
         $this->IRCApi->joinChannel($channel);

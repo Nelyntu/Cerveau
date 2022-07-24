@@ -24,8 +24,8 @@ class SoCommandHandler implements CommandHandlerInterface
 
     public function handle(Command $command): ?string
     {
-        $userToSO = $command->arguments[1];
-        if (!$userToSO) {
+        $userToSO = $command->arguments->firstArgument;
+        if ($userToSO === null) {
             return null;
         }
 
