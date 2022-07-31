@@ -15,7 +15,7 @@ class Arguments
         return new self($text, $matches[1], $matches[2] ?? null);
     }
 
-    public function __construct(public ?string $text, public ?string $firstArgument, public ?string $rest)
+    private function __construct(public ?string $text, public ?string $firstArgument, public ?string $rest)
     {
     }
 }

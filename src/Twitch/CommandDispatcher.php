@@ -65,7 +65,7 @@ class CommandDispatcher
         return $this->commands;
     }
 
-    public function findCommandSymbol(Message $message): ?string
+    private function findCommandSymbol(Message $message): ?string
     {
         foreach ($this->commandSymbols as $symbol) {
             if (str_starts_with($message->text, $symbol)) {

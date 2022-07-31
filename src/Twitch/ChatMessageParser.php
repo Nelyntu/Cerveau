@@ -16,7 +16,7 @@ class ChatMessageParser
     protected static function parseUser(string $data): ?string
     {
         $user = null;
-        if (strpos($data, ":") === 0) {
+        if (str_starts_with($data, ":")) {
             $tmp = explode('!', $data);
             $user = substr($tmp[0], 1);
         }
@@ -30,7 +30,7 @@ class ChatMessageParser
     protected static function parseChannel(string $data): ?string
     {
         $arr = explode(' ', substr($data, strpos($data, '#')));
-        if (strpos($arr[0], "#") === 0) {
+        if (str_starts_with($arr[0], "#")) {
             return substr($arr[0], 1);
         }
 
