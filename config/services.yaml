@@ -67,6 +67,7 @@ services:
             - addCommand: ['@Twitch\CommandHandler\ResponseCommandHandler']
             - addCommand: ['@Twitch\CommandHandler\HeightBallCommand']
             - addCommand: ['@Twitch\CommandHandler\SmallerBiggerCommand']
+            - addCommand: ['@Twitch\CommandHandler\Hangman\HangmanCommandHandler']
 
     Twitch\CommandHandler\ResponseCommandHandler:
         arguments:
