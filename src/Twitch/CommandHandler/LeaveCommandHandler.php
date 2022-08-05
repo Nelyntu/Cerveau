@@ -2,20 +2,20 @@
 
 namespace Twitch\CommandHandler;
 
+use GhostZero\Tmi;
 use Twitch\Command;
-use Twitch\IRCApi;
 use Twitch\UserList;
 
 class LeaveCommandHandler implements CommandHandlerInterface
 {
     private const COMMAND_NAME = 'leave';
     private UserList $userList;
-    private IRCApi $IRCApi;
+    private Tmi\Client $ircClient;
 
-    public function __construct(IRCApi $IRCApi, UserList $userList)
+    public function __construct(Tmi\Client $ircClient, UserList $userList)
     {
         $this->userList = $userList;
-        $this->IRCApi = $IRCApi;
+        $this->ircClient = $ircClient;
     }
 
     public function supports($name): bool
@@ -25,7 +25,7 @@ class LeaveCommandHandler implements CommandHandlerInterface
 
     public function handle(Command $command): ?string
     {
-        $this->IRCApi->leaveChannel($command->channel);
+        $this->ircClient->part($command->arguments->firstArgument);
 
         return null;
     }

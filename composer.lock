@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "072f028e3ba6ce2088c9f234c8bc1154",
+    "content-hash": "99e13e94941daa03c78020864805d875",
     "packages": [
         {
             "name": "evenement/evenement",
@@ -52,6 +52,52 @@
                 "source": "https://github.com/igorw/evenement/tree/master"
             },
             "time": "2017-07-23T21:35:13+00:00"
+        },
+        {
+            "name": "ghostzero/tmi",
+            "version": "2.3.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ghostzero/tmi.git",
+                "reference": "d26611b6fdce805cb2d71c3171b746de957a8aae"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ghostzero/tmi/zipball/d26611b6fdce805cb2d71c3171b746de957a8aae",
+                "reference": "d26611b6fdce805cb2d71c3171b746de957a8aae",
+                "shasum": ""
+            },
+            "require": {
+                "ext-json": "*",
+                "ext-mbstring": "*",
+                "php": "^7.4|^8.0",
+                "react/socket": "^1.6"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^9.3.3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "GhostZero\\Tmi\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "René Preuß",
+                    "email": "rene@preuss.io"
+                }
+            ],
+            "description": "PHP Twitch Messaging Interface",
+            "support": {
+                "issues": "https://github.com/ghostzero/tmi/issues",
+                "source": "https://github.com/ghostzero/tmi/tree/2.3.1"
+            },
+            "time": "2022-05-16T09:33:58+00:00"
         },
         {
             "name": "monolog/monolog",

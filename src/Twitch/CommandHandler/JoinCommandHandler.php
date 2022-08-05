@@ -2,20 +2,20 @@
 
 namespace Twitch\CommandHandler;
 
+use GhostZero\Tmi;
 use Twitch\Command;
-use Twitch\IRCApi;
 use Twitch\UserList;
 
 class JoinCommandHandler implements CommandHandlerInterface
 {
     private const COMMAND_NAME = 'join';
     private UserList $userList;
-    private IRCApi $IRCApi;
+    private Tmi\Client $ircClient;
 
-    public function __construct(IRCApi $IRCApi, UserList $userList)
+    public function __construct(Tmi\Client $ircClient, UserList $userList)
     {
         $this->userList = $userList;
-        $this->IRCApi = $IRCApi;
+        $this->ircClient = $ircClient;
     }
 
     public function supports($name): bool
@@ -29,7 +29,7 @@ class JoinCommandHandler implements CommandHandlerInterface
         if ($channel === null) {
             return null;
         }
-        $this->IRCApi->joinChannel($channel);
+        $this->ircClient->join($channel);
 
         return null;
     }

@@ -2,52 +2,26 @@
 
 namespace Twitch;
 
-use Exception;
+use GhostZero\Tmi;
 use Psr\Log\LoggerInterface;
-use React\EventLoop\LoopInterface;
 use React\Socket\ConnectionInterface;
 
 class Twitch
 {
-    protected LoopInterface $loop;
     protected CommandDispatcher $commands;
-    private string $secret;
-    private string $nick;
-    /** @var string[] */
-    private array $initialChannels;
     /** @var string[] */
     private array $badWords = [];
     protected ?ConnectionInterface $connection = null;
     protected bool $running = false;
-    private bool $closing = false;
-    private IRCApi $ircApi;
+    private Tmi\Client $ircClient;
     private LoggerInterface $logger;
 
-    public function __construct(IRCApi $ircApi, LoggerInterface $logger, array $options, CommandDispatcher $commandDispatcher, LoopInterface $loop)
+    public function __construct(Tmi\Client $ircClient, LoggerInterface $logger, array $options, CommandDispatcher $commandDispatcher)
     {
         if (PHP_SAPI !== 'cli') {
             trigger_error(
                 'Cerveau will not run on a webserver. Please use PHP CLI to run a Cerveau self-bot.',
                 E_USER_ERROR);
-        }
-        if (!$options['secret']) {
-            trigger_error(
-                'Cerveau requires a client secret to connect. Get your Chat OAuth Password here => https://twitchapps.com/tmi/',
-                E_USER_ERROR);
-        }
-        if (!$options['nick']) {
-            trigger_error(
-                'Cerveau requires a client username to connect. This should be the same username you use to log in.',
-                E_USER_ERROR);
-        }
-        $options['nick'] = strtolower($options['nick']);
-
-        $this->loop = $loop;
-        $this->secret = $options['secret'];
-        $this->nick = $options['nick'];
-        $this->initialChannels = array_map('strtolower', $options['channels']);
-        if (empty($this->initialChannels)) {
-            $this->initialChannels = [$options['nick']];
         }
 
         if (is_array($options['badwords'])) {
@@ -55,37 +29,27 @@ class Twitch
         }
         $this->commands = $commandDispatcher;
         $this->logger = $logger;
-        $this->ircApi = $ircApi;
+        $this->ircClient = $ircClient;
     }
 
-    public function run(bool $runLoop = true): void
+    public function run(): void
     {
         $this->logger->info('[T][RUN]');
         if (!$this->running) {
             $this->running = true;
             $this->connect();
         }
-        $this->logger->info('[T][LOOP->RUN]');
-        if ($runLoop) {
-            $this->loop->run();
-        }
     }
 
-    public function close(bool $closeLoop = true): void
+    public function close(): void
     {
         $this->logger->info('[T][CLOSE]');
         if ($this->running) {
             $this->running = false;
-            $this->ircApi->leaveChannels();
-        }
-        if ($closeLoop && !$this->closing) {
-            $this->closing = true;
-            $this->logger->info('[T][LOOP->STOP]');
-
-            $this->loop->addTimer(3, function () {
-                $this->closing = false;
-                $this->loop->stop();
-            });
+            foreach ($this->ircClient->getChannels() as $channel) {
+                $this->ircClient->part($channel);
+            }
+           $this->ircClient->close();
         }
     }
 
@@ -102,47 +66,29 @@ class Twitch
             return;
         }
 
-        $this->ircApi->connect()
-            ->then(
-                function (ConnectionInterface $connection) {
-                    $this->ircApi->init($this->secret, $this->nick, $this->initialChannels);
-                    $connection->on('data', function ($data) {
-                        $this->process($data);
-                    });
-                    $connection->on('close', function () {
-                        $this->logger->info('[T][CLOSE]');
-                    });
-                    $this->logger->info('[T][CONNECTED]');
-                },
-                function (Exception $exception) {
-                    $this->logger->error('[T][ERROR] ' . $exception->getMessage());
-                }
-            );
+        $this->ircClient->on(Tmi\Events\Twitch\MessageEvent::class, function (Tmi\Events\Twitch\MessageEvent $e) {
+            $message = new Message($e->channel, $e->user, $e->message);
+
+            $this->process($message);
+        });
+
+        $this->ircClient->connect();
     }
 
-    protected function process(string $data): void
+    protected function process(Message $message): void
     {
-        $this->logger->debug('[T]DATA: `' . $data . '`');
-        if (trim($data) === "PING :tmi.twitch.tv") {
-            $this->ircApi->pong();
-
+        $response = $this->parseMessage($message);
+        if ($response === null) {
             return;
         }
 
-        if (false !== strpos($data, 'PRIVMSG')) {
-            $response = $this->parseMessage($data);
-            if ($response === null) {
-                return;
-            }
-
-            // why this code ?
-            // does it ban someone that the bot says bad words ?
-            if ($this->badWordsCheck($response->message)) {
-                $this->ircApi->ban($response->fromUser);
-            }
-            $payload = '@' . $response->fromUser . ', ' . $response->message . "\n";
-            $this->ircApi->sendMessage($payload, $response->channel);
+        // why this code ?
+        // does it ban someone that the bot says bad words ?
+        if ($this->badWordsCheck($response->message)) {
+            $this->ban($response->channel, $response->fromUser);
         }
+        $payload = '@' . $response->fromUser . ', ' . $response->message . "\n";
+        $this->ircClient->say($response->channel, $payload);
     }
 
     protected function badWordsCheck($message): bool
@@ -152,7 +98,7 @@ class Twitch
         }
         $this->logger->debug('[T][BADWORD CHECK] ' . $message);
         foreach ($this->badWords as $badWord) {
-            if (strpos($message, $badWord) !== false) {
+            if (str_contains($message, $badWord)) {
                 $this->logger->info('[T][BADWORD FOUND] ' . $badWord);
 
                 return true;
@@ -162,14 +108,12 @@ class Twitch
         return false;
     }
 
-    protected function parseMessage(string $data): ?Response
+    protected function parseMessage(Message $message): ?Response
     {
-        $message = ChatMessageParser::parse($data);
-
         $this->logger->debug('[PRIVMSG] (#' . $message->channel . ') ' . $message->user . ': ' . $message->text);
 
         if ($this->badWordsCheck($message->text)) {
-            $this->ircApi->ban($message->user);
+            $this->ban($message->channel, $message->user);
         }
 
         $response = $this->commands->handle($message);
@@ -179,5 +123,10 @@ class Twitch
         }
 
         return new Response($message->channel, $message->user, $response);
+    }
+
+    public function ban(string $channel, string $user, string $reason = ''): void
+    {
+        $this->ircClient->say($channel, '/ban ' . $user . ' ' . $reason);
     }
 }
