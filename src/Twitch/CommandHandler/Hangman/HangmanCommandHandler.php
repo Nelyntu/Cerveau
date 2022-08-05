@@ -23,9 +23,11 @@ class HangmanCommandHandler implements CommandHandlerInterface
 
     public function handle(Command $command): ?string
     {
+        list($wordToFindItemCache, $session) = $this->retrieveWord();
+
         $suggestedLetter = $command->arguments->firstArgument;
         if ($suggestedLetter === null) {
-            return 'tu dois proposer une lettre. Par exemple : !hg e';
+            return 'voilà où on en est au pendu : '.$session->getWordFoundByUsers();
         }
 
         if (!is_string($suggestedLetter) || strlen($suggestedLetter) > 1) {
@@ -44,22 +46,6 @@ class HangmanCommandHandler implements CommandHandlerInterface
         $coolDownItemCache->expiresAfter(1);
         $coolDownItemCache->set(1 + microtime(true));
         $this->cache->save($coolDownItemCache);
-
-        // retrieve word
-
-        $wordToFindItemCache = $this->cache->getItem('cerveau:command:hg:v3:data');
-        if (!$wordToFindItemCache->isHit()) {
-            // new word !
-            $wordToFind = $this->getRandomWord();
-            $session = new HangmanSession($wordToFind);
-
-            $wordToFindItemCache->expiresAfter(3600 * 5);
-            $wordToFindItemCache->set($session);
-            $this->cache->save($wordToFindItemCache);
-        } else {
-            /** @var HangmanSession $session */
-            $session = $wordToFindItemCache->get();
-        }
 
         if ($session->isLetterAlreadySuggested($suggestedLetter)) {
             return $suggestedLetter . ' a déjà été proposé.';
@@ -937,5 +923,27 @@ class HangmanCommandHandler implements CommandHandlerInterface
             'MECHANT',
         ];
         return mb_strtoupper($possibleWords[random_int(0, count($possibleWords) - 1)]);
+    }
+
+    /**
+     * @return array
+     * @throws \Psr\Cache\InvalidArgumentException
+     */
+    public function retrieveWord(): array
+    {
+        $wordToFindItemCache = $this->cache->getItem('cerveau:command:hg:v3:data');
+        if (!$wordToFindItemCache->isHit()) {
+            // new word !
+            $wordToFind = $this->getRandomWord();
+            $session = new HangmanSession($wordToFind);
+
+            $wordToFindItemCache->expiresAfter(3600 * 5);
+            $wordToFindItemCache->set($session);
+            $this->cache->save($wordToFindItemCache);
+        } else {
+            /** @var HangmanSession $session */
+            $session = $wordToFindItemCache->get();
+        }
+        return array($wordToFindItemCache, $session);
     }
 }
