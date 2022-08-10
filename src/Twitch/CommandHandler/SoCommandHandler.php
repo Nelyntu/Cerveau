@@ -2,6 +2,7 @@
 
 namespace Twitch\CommandHandler;
 
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Twitch\Command;
 use Twitch\Twitch;
 use Twitch\UserList;
@@ -11,10 +12,12 @@ class SoCommandHandler implements CommandHandlerInterface
 {
     private const COMMAND_NAME = 'so';
     private UserList $userList;
+    private TranslatorInterface $translator;
 
-    public function __construct(UserList $userList)
+    public function __construct(UserList $userList, TranslatorInterface $translator)
     {
         $this->userList = $userList;
+        $this->translator = $translator;
     }
 
     public function supports($name): bool
@@ -29,7 +32,7 @@ class SoCommandHandler implements CommandHandlerInterface
             return null;
         }
 
-        return 'Hey, go check out ' . $userToSO . ' at https://www.twitch.tv/' . $userToSO . ' They are good peoples! Pretty good. Pretty good!';
+        return $this->translator->trans('commands.so.message', ['%streamer%' => $userToSO,], 'commands');
     }
 
     public function isAuthorized($username): bool

@@ -1,0 +1,30 @@
+commands:
+    sb:
+        empty_choice: 'you have to suggest a number. Example : !sb 42'
+        found: "you found it ! It's %valueToFind%."
+        invalid_choice: "you search a number. please, suggest a... number... 😎"
+        is_bigger: "nope, it's bigger."
+        is_smaller: "nope, it's smaller."
+        triggered_cooldown: 'please wait, try again in %remainingCoolDownTime%s.'
+    hg:
+        already_suggested_letter: '%suggestedLetter% was already suggested.'
+        failed_suggested_letter: 'there''s no %suggestedLetter%. You have %tries% tries.'
+        game_over: 'Game over ! The word to find was %wordToFind%'
+        invalid_letter: 'it''s hangman game... please, suggest a... letter... 😎'
+        reminder: ' 🤔 : %wordFoundByUsers%'
+        situation: 'current status of hangman is %wordFoundByUsers%'
+        succeed_suggested_letter: 'well down, %suggestedLetter% is in the word!'
+        triggered_cooldown: 'please wait, try again in %remainingCoolDownTime%s.'
+        win: 'congrats, the word to find is : %wordToFind%'
+    question:
+        yes:
+            1: yes
+            2: 'it will works'
+            3: 'go ahead 🤗'
+        no:
+            1: 'no'
+            2: 'no way...'
+            3: 'go to hell 👿'
+        triggered_cooldown: 'KEEP CALM and wait a bit'
+    so:
+        message: 'Hey, go check out %streamer% at https://www.twitch.tv/%streamer% They are good peoples! Pretty good. Pretty good!'

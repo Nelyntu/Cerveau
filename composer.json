@@ -21,6 +21,7 @@
     "symfony/framework-bundle": "6.1.*",
     "symfony/monolog-bundle": "^3.8",
     "symfony/runtime": "6.1.*",
+    "symfony/translation": "6.1.*",
     "symfony/yaml": "6.1.*",
     "threshold/mb-substr-replace": "^1.0"
   },

@@ -3,16 +3,19 @@
 namespace Twitch\CommandHandler;
 
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Twitch\Command;
 
 class HeightBallCommand implements CommandHandlerInterface
 {
     private const COMMAND_NAME = 'question';
     private FilesystemAdapter $cache;
+    private TranslatorInterface $translator;
 
-    public function __construct(FilesystemAdapter $cache)
+    public function __construct(FilesystemAdapter $cache, TranslatorInterface $translator)
     {
         $this->cache = $cache;
+        $this->translator = $translator;
     }
 
     public function supports($name): bool
@@ -25,7 +28,7 @@ class HeightBallCommand implements CommandHandlerInterface
         // cooldown detection
         $coolDownItemCache = $this->cache->getItem('cerveau:command:question:cooldown:' . $command->user);
         if ($coolDownItemCache->isHit()) {
-            return 'TU TE CALMES ! RESPIRE UN PEU AVANT DE REPOSER UNE QUESTION !';
+            return $this->translator->trans('commands.question.triggered_cooldown', [], 'commands');
         }
 
         $coolDownItemCache->expiresAfter(30);
@@ -33,17 +36,19 @@ class HeightBallCommand implements CommandHandlerInterface
 
         // main code
         $possibleResponses = [
-            'Oui',
-            'Non',
-            'ça marchera !',
-            'Aucune chance...',
-            'Vas-y, fonce 🤗',
-            'Plutôt l\'enfer 👿',
+            'yes.1',
+            'yes.2',
+            'yes.3',
+            'no.1',
+            'no.2',
+            'no.3',
         ];
 
         $responseIndex = rand(0, count($possibleResponses) - 1);
 
-        return $possibleResponses[$responseIndex];
+        $transkey = $possibleResponses[$responseIndex];
+
+        return $this->translator->trans('commands.question.' . $transkey, [], 'commands');
     }
 
     public function isAuthorized($username): bool

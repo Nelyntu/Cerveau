@@ -3,16 +3,19 @@
 namespace Twitch\CommandHandler;
 
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Twitch\Command;
 
 class SmallerBiggerCommand implements CommandHandlerInterface
 {
     private const COMMAND_NAME = 'sb';
     private FilesystemAdapter $cache;
+    private TranslatorInterface $translator;
 
-    public function __construct(FilesystemAdapter $cache)
+    public function __construct(FilesystemAdapter $cache, TranslatorInterface $translator)
     {
         $this->cache = $cache;
+        $this->translator = $translator;
     }
 
     public function supports($name): bool
@@ -24,11 +27,11 @@ class SmallerBiggerCommand implements CommandHandlerInterface
     {
         $suggestedValue = $command->arguments->firstArgument;
         if ($suggestedValue === null) {
-            return 'tu dois proposer un nombre. Par exemple : !sb 42';
+            return $this->translator->trans('commands.sb.empty_choice', [], 'commands');
         }
 
         if (!is_numeric($suggestedValue)) {
-            return 'c\'est un nombre qu\'il faut proposer 😅. Tu sais ... des chiffres ... 😎';
+            return $this->translator->trans('commands.sb.invalid_choice', [], 'commands');
         }
 
         $suggestedValue = (int)$suggestedValue;
@@ -38,7 +41,7 @@ class SmallerBiggerCommand implements CommandHandlerInterface
         if ($coolDownItemCache->isHit()) {
             $remainingCoolDownTime = (int)($coolDownItemCache->get() - microtime(true));
 
-            return 'TU TE CALMES ! Tu peux retenter dans ' . $remainingCoolDownTime . 's';
+            return $this->translator->trans('commands.sb.triggered_cooldown', ['%remainingCoolDownTime%' => $remainingCoolDownTime], 'commands');
         }
         $coolDownItemCache->expiresAfter(30);
         $coolDownItemCache->set(30 + microtime(true));
@@ -58,16 +61,17 @@ class SmallerBiggerCommand implements CommandHandlerInterface
         }
 
         if ($suggestedValue > $valueToFind) {
-            return 'non, c\'est plus petit.';
+            return $this->translator->trans('commands.sb.is_smaller', [], 'commands');
+
         }
 
         if ($suggestedValue < $valueToFind) {
-            return 'non, c\'est plus grand.';
+            return $this->translator->trans('commands.sb.is_bigger', [], 'commands');
         }
 
         $this->cache->deleteItem('cerveau:command:sb:value');
 
-        return 'tu as trouvé ! C\'était effectivement ' . $valueToFind . '.';
+        return $this->translator->trans('commands.sb.found', ['%valueToFind%' => $valueToFind], 'commands');
     }
 
     public function isAuthorized($username): bool

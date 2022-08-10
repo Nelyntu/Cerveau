@@ -1,0 +1,30 @@
+commands:
+    sb:
+        empty_choice: 'tu dois proposer un nombre. Par exemple : !sb 42'
+        found: "tu as trouvé ! C'était effectivement %valueToFind%."
+        invalid_choice: "c'est un nombre qu'il faut proposer 😅. Tu sais ... des chiffres ... 😎"
+        is_bigger: "non, c'est plus grand."
+        is_smaller: "non, c'est plus petit."
+        triggered_cooldown: 'TU TE CALMES ! Tu peux retenter dans %remainingCoolDownTime%s.'
+    hg:
+        already_suggested_letter: '%suggestedLetter% a déjà été proposé.'
+        failed_suggested_letter: 'le mot n''a pas de %suggestedLetter%. Il reste %tries% tentatives.'
+        game_over: 'Perdu ! Le mot à trouver était %wordToFind%'
+        invalid_letter: 'c''est UNE lettre qu''il faut proposer 😅. Tu sais ... l''alphabet ... 😎'
+        reminder: ' 🤔 : %wordFoundByUsers%'
+        situation: 'voilà où on en est au pendu : %wordFoundByUsers%'
+        succeed_suggested_letter: 'bien joué, %suggestedLetter% est dans le mot !'
+        triggered_cooldown: 'TU TE CALMES ! Tu peux retenter dans %remainingCoolDownTime%s.'
+        win: 'Bravo, le mot est effectivement : %wordToFind%'
+    question:
+        yes:
+            1: oui
+            2: 'ça marchera !'
+            3: 'vas-y, fonce 🤗'
+        no:
+            1: 'non'
+            2: 'aucune chance...'
+            3: 'plutôt, l''enfer 👿'
+        triggered_cooldown: 'TU TE CALMES ! RESPIRE UN PEU AVANT DE REPOSER UNE QUESTION !'
+    so:
+        message: 'Hééé, allez voir %streamer% sur https://www.twitch.tv/%streamer% Je vous conseille ses streams !'

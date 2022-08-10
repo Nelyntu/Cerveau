@@ -3,6 +3,8 @@
 namespace Twitch\CommandHandler\Hangman;
 
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Symfony\Component\Cache\CacheItem;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Twitch\Command;
 use Twitch\CommandHandler\CommandHandlerInterface;
 
@@ -10,10 +12,12 @@ class HangmanCommandHandler implements CommandHandlerInterface
 {
     private const COMMAND_NAME = 'hg';
     private FilesystemAdapter $cache;
+    private TranslatorInterface $translator;
 
-    public function __construct(FilesystemAdapter $cache)
+    public function __construct(FilesystemAdapter $cache, TranslatorInterface $translator)
     {
         $this->cache = $cache;
+        $this->translator = $translator;
     }
 
     public function supports($name): bool
@@ -23,15 +27,20 @@ class HangmanCommandHandler implements CommandHandlerInterface
 
     public function handle(Command $command): ?string
     {
-        list($wordToFindItemCache, $session) = $this->retrieveWord();
+        /** @var HangmanSession $session */
+        /** @var CacheItem $wordToFindItemCache */
+        [$wordToFindItemCache, $session] = $this->retrieveWord();
 
         $suggestedLetter = $command->arguments->firstArgument;
         if ($suggestedLetter === null) {
-            return 'voilà où on en est au pendu : '.$session->getWordFoundByUsers();
+            return $this->translator->trans(
+                'commands.hg.situation',
+                ['%wordFoundByUsers%' => $session->getWordFoundByUsers()],
+                'commands');
         }
 
         if (!is_string($suggestedLetter) || strlen($suggestedLetter) > 1) {
-            return 'c\'est UNE lettre qu\'il faut proposer 😅. Tu sais ... l\'alphabet ... 😎';
+            return $this->translator->trans( 'commands.hg.invalid_letter', [], 'commands');
         }
 
         $suggestedLetter = mb_strtoupper($suggestedLetter);
@@ -41,25 +50,28 @@ class HangmanCommandHandler implements CommandHandlerInterface
         if ($coolDownItemCache->isHit()) {
             $remainingCoolDownTime = (int)($coolDownItemCache->get() - microtime(true));
 
-            return 'TU TE CALMES ! Tu peux retenter dans ' . $remainingCoolDownTime . 's';
+            return $this->translator->trans('commands.hg.triggered_cooldown', ['%remainingCoolDownTime%' => $remainingCoolDownTime], 'commands');
         }
+
         $coolDownItemCache->expiresAfter(1);
         $coolDownItemCache->set(1 + microtime(true));
         $this->cache->save($coolDownItemCache);
 
         if ($session->isLetterAlreadySuggested($suggestedLetter)) {
-            return $suggestedLetter . ' a déjà été proposé.';
+            return $this->translator->trans( 'commands.hg.already_suggested_letter', ['%suggestedLetter%' => $suggestedLetter], 'commands');
         }
 
         if ($session->suggestLetter($suggestedLetter)) {
-            $responseToProposition = 'bien joué, ' . $suggestedLetter . ' est dans le mot !';
+            $responseToProposition = $this->translator->trans( 'commands.hg.succeed_suggested_letter', ['%suggestedLetter%' => $suggestedLetter,], 'commands');
+
         } else {
             $fails = $session->getFails();
             if ($fails === 9) {
                 $this->cache->deleteItem('cerveau:command:hg:v3:data');
-                return 'Perdu ! Le mot à trouver était ' . $session->getWordToFind();
+
+                return $this->translator->trans( 'commands.hg.game_over', ['%wordToFind%' => $session->getWordToFind()], 'commands');
             }
-            $responseToProposition = 'le mot n\'a pas de ' . $suggestedLetter . '. Il reste ' . (9 - $fails) . ' tentatives.';
+            $responseToProposition = $this->translator->trans( 'commands.hg.failed_suggested_letter', ['%suggestedLetter%' => $suggestedLetter, '%tries%' => (9 - $fails)], 'commands');
         }
 
         $wordToFindItemCache->set($session);
@@ -67,10 +79,11 @@ class HangmanCommandHandler implements CommandHandlerInterface
 
         if ($session->isWordFound()) {
             $this->cache->deleteItem('cerveau:command:hg:v3:data');
-            return 'Bravo, le mot est effectivement : ' . $session->getWordToFind();
+
+            return $this->translator->trans( 'commands.hg.win', ['%wordToFind%' => $session->getWordToFind()], 'commands');
         }
 
-        return $responseToProposition . ' 🤔 : ' . $session->getWordFoundByUsers();
+        return $responseToProposition . $this->translator->trans( 'commands.hg.reminder', ['%wordFoundByUsers%' => $session->getWordFoundByUsers()], 'commands');
     }
 
     public function isAuthorized($username): bool
@@ -922,6 +935,7 @@ class HangmanCommandHandler implements CommandHandlerInterface
             'FOU',
             'MECHANT',
         ];
+
         return mb_strtoupper($possibleWords[random_int(0, count($possibleWords) - 1)]);
     }
 
@@ -929,7 +943,7 @@ class HangmanCommandHandler implements CommandHandlerInterface
      * @return array
      * @throws \Psr\Cache\InvalidArgumentException
      */
-    public function retrieveWord(): array
+    private function retrieveWord(): array
     {
         $wordToFindItemCache = $this->cache->getItem('cerveau:command:hg:v3:data');
         if (!$wordToFindItemCache->isHit()) {
@@ -944,6 +958,7 @@ class HangmanCommandHandler implements CommandHandlerInterface
             /** @var HangmanSession $session */
             $session = $wordToFindItemCache->get();
         }
-        return array($wordToFindItemCache, $session);
+
+        return [$wordToFindItemCache, $session];
     }
 }
