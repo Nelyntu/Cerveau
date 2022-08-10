@@ -83,6 +83,7 @@
     }
   },
   "require-dev": {
+    "roave/security-advisories": "dev-latest",
     "phpstan/phpstan": "^1.8"
   }
 }
