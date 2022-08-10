@@ -52,7 +52,7 @@ class SmallerBiggerCommand implements CommandHandlerInterface
         $valueToFindItemCache = $this->cache->getItem('cerveau:command:sb:value');
         if (!$valueToFindItemCache->isHit()) {
             // new value !
-            $valueToFind = rand(0, 1_000);
+            $valueToFind = random_int(0, 1_000);
             $valueToFindItemCache->set($valueToFind);
             $valueToFindItemCache->expiresAfter(3600 * 5);
             $this->cache->save($valueToFindItemCache);

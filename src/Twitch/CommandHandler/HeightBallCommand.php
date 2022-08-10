@@ -44,7 +44,7 @@ class HeightBallCommand implements CommandHandlerInterface
             'no.3',
         ];
 
-        $responseIndex = rand(0, count($possibleResponses) - 1);
+        $responseIndex = random_int(0, count($possibleResponses) - 1);
 
         $transkey = $possibleResponses[$responseIndex];
 
