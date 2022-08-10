@@ -16,7 +16,7 @@ class PhpCommandHandler implements CommandHandlerInterface
         $this->userList = $userList;
     }
 
-    public function supports($name): bool
+    public function supports(string $name): bool
     {
         return $name === self::COMMAND_NAME;
     }
@@ -26,7 +26,7 @@ class PhpCommandHandler implements CommandHandlerInterface
         return 'Current PHP version: ' . PHP_VERSION;
     }
 
-    public function isAuthorized($username): bool
+    public function isAuthorized(string $username): bool
     {
         return $username === $this->userList->streamer;
     }

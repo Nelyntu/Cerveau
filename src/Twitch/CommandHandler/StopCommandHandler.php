@@ -18,7 +18,7 @@ class StopCommandHandler implements CommandHandlerInterface
         $this->userList = $userList;
     }
 
-    public function supports($name): bool
+    public function supports(string $name): bool
     {
         return $name === self::COMMAND_NAME;
     }
@@ -30,7 +30,7 @@ class StopCommandHandler implements CommandHandlerInterface
         return null;
     }
 
-    public function isAuthorized($username): bool
+    public function isAuthorized(string $username): bool
     {
         return $username === $this->userList->streamer;
     }

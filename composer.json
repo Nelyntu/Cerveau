@@ -81,5 +81,8 @@
       "allow-contrib": false,
       "require": "6.1.*"
     }
+  },
+  "require-dev": {
+    "phpstan/phpstan": "^1.8"
   }
 }

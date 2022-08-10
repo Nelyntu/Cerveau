@@ -16,6 +16,9 @@ class CommandDispatcher
     private array $commandSymbols;
     private LoggerInterface $logger;
 
+    /**
+     * @param string[] $commandSymbols
+     */
     public function __construct(array $commandSymbols, LoggerInterface $logger)
     {
         $this->commandSymbols = $commandSymbols;
@@ -98,6 +101,9 @@ class CommandDispatcher
         return new Command($message->channel, $message->user, $command, Arguments::createFrom($arguments));
     }
 
+    /**
+     * @return string[]
+     */
     public function getCommandSymbols(): array
     {
         return $this->commandSymbols;

@@ -20,7 +20,7 @@ class HangmanCommandHandler implements CommandHandlerInterface
         $this->translator = $translator;
     }
 
-    public function supports($name): bool
+    public function supports(string $name): bool
     {
         return $name === self::COMMAND_NAME;
     }
@@ -86,7 +86,7 @@ class HangmanCommandHandler implements CommandHandlerInterface
         return $responseToProposition . $this->translator->trans( 'commands.hg.reminder', ['%wordFoundByUsers%' => $session->getWordFoundByUsers()], 'commands');
     }
 
-    public function isAuthorized($username): bool
+    public function isAuthorized(string $username): bool
     {
         return true;
     }
@@ -940,7 +940,7 @@ class HangmanCommandHandler implements CommandHandlerInterface
     }
 
     /**
-     * @return array
+     * @return mixed[]
      * @throws \Psr\Cache\InvalidArgumentException
      */
     private function retrieveWord(): array

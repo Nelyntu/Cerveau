@@ -15,7 +15,7 @@ class HelpCommandHandler implements CommandHandlerInterface
         $this->commandDispatcher = $commandDispatcher;
     }
 
-    public function supports($name): bool
+    public function supports(string $name): bool
     {
         return $name === self::COMMAND_NAME;
     }
@@ -33,7 +33,7 @@ class HelpCommandHandler implements CommandHandlerInterface
         return $commands;
     }
 
-    public function isAuthorized($username): bool
+    public function isAuthorized(string $username): bool
     {
         return true;
     }

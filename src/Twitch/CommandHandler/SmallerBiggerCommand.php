@@ -18,7 +18,7 @@ class SmallerBiggerCommand implements CommandHandlerInterface
         $this->translator = $translator;
     }
 
-    public function supports($name): bool
+    public function supports(string $name): bool
     {
         return $name === self::COMMAND_NAME;
     }
@@ -74,7 +74,7 @@ class SmallerBiggerCommand implements CommandHandlerInterface
         return $this->translator->trans('commands.sb.found', ['%valueToFind%' => $valueToFind], 'commands');
     }
 
-    public function isAuthorized($username): bool
+    public function isAuthorized(string $username): bool
     {
         return true;
     }

@@ -7,6 +7,9 @@ use GhostZero\Tmi\ClientOptions;
 
 class IRCClientFactory
 {
+    /**
+     * @param string[]  $channels
+     */
     public function __construct(private string $nick, private array $channels, private string $secret)
     {
     }

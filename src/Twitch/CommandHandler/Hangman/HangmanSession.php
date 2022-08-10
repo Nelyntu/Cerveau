@@ -7,6 +7,7 @@ class HangmanSession
     private const NOT_FOUND_CHARACTER = '❓';
     private string $wordToFind;
     private string $wordFoundByUsers;
+    /** @var string[] */
     private array $suggestedLetters = [];
     private int $fails = 0;
 

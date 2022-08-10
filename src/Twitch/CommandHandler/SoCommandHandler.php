@@ -20,7 +20,7 @@ class SoCommandHandler implements CommandHandlerInterface
         $this->translator = $translator;
     }
 
-    public function supports($name): bool
+    public function supports(string $name): bool
     {
         return $name === self::COMMAND_NAME;
     }
@@ -35,7 +35,7 @@ class SoCommandHandler implements CommandHandlerInterface
         return $this->translator->trans('commands.so.message', ['%streamer%' => $userToSO,], 'commands');
     }
 
-    public function isAuthorized($username): bool
+    public function isAuthorized(string $username): bool
     {
         return in_array($username, $this->userList->getAll(), true);
     }

@@ -18,7 +18,7 @@ class HeightBallCommand implements CommandHandlerInterface
         $this->translator = $translator;
     }
 
-    public function supports($name): bool
+    public function supports(string $name): bool
     {
         return $name === self::COMMAND_NAME;
     }
@@ -51,7 +51,7 @@ class HeightBallCommand implements CommandHandlerInterface
         return $this->translator->trans('commands.question.' . $transkey, [], 'commands');
     }
 
-    public function isAuthorized($username): bool
+    public function isAuthorized(string $username): bool
     {
         return true;
     }

@@ -16,8 +16,15 @@ class Twitch
     private Tmi\Client $ircClient;
     private LoggerInterface $logger;
 
-    public function __construct(Tmi\Client $ircClient, LoggerInterface $logger, array $options, CommandDispatcher $commandDispatcher)
-    {
+    /**
+     * @param mixed[] $options
+     */
+    public function __construct(
+        Tmi\Client $ircClient,
+        LoggerInterface $logger,
+        array $options,
+        CommandDispatcher $commandDispatcher
+    ) {
         if (PHP_SAPI !== 'cli') {
             trigger_error(
                 'Cerveau will not run on a webserver. Please use PHP CLI to run a Cerveau self-bot.',
@@ -49,7 +56,7 @@ class Twitch
             foreach ($this->ircClient->getChannels() as $channel) {
                 $this->ircClient->part($channel);
             }
-           $this->ircClient->close();
+            $this->ircClient->close();
         }
     }
 
@@ -91,7 +98,7 @@ class Twitch
         $this->ircClient->say($response->channel, $payload);
     }
 
-    protected function badWordsCheck($message): bool
+    protected function badWordsCheck(string $message): bool
     {
         if (empty($this->badWords)) {
             return false;

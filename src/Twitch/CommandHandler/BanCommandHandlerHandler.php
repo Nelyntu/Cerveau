@@ -19,21 +19,25 @@ class BanCommandHandlerHandler implements CommandHandlerInterface
         $this->twitch = $twitch;
     }
 
-    public function supports($name): bool
+    public function supports(string $name): bool
     {
         return $name === self::COMMAND_NAME;
     }
 
     public function handle(Command $command): ?string
     {
+        if ($command->arguments->firstArgument === null) {
+            return null;
+        }
+
         $bannedUser = $command->arguments->firstArgument;
-        $reason = $command->arguments->rest;
+        $reason = $command->arguments->rest ?? '';
         $this->twitch->ban($command->channel, $bannedUser, $reason);
 
         return null;
     }
 
-    public function isAuthorized($username): bool
+    public function isAuthorized(string $username): bool
     {
         return in_array($username, $this->userList->getAll(), true);
     }
