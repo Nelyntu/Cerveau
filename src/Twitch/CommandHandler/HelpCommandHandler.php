@@ -26,9 +26,7 @@ class HelpCommandHandler implements CommandHandlerInterface
         $authorizedCommands = array_filter($this->commandDispatcher->getCommands(), fn(CommandHandlerInterface $commandHandler) => $commandHandler->isAuthorized($command->user));
         $commandNames = array_map(fn(CommandHandlerInterface $commandHandler) => $commandHandler->getName(), $authorizedCommands);
 
-        $commands .= '[Commands] ' . implode(', ', array_merge(...$commandNames));
-
-        return $commands;
+        return $commands . ('[Commands] ' . implode(', ', array_merge(...$commandNames)));
     }
 
     public function isAuthorized(string $username): bool
