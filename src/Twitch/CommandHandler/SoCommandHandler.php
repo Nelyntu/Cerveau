@@ -11,13 +11,9 @@ use function in_array;
 class SoCommandHandler implements CommandHandlerInterface
 {
     private const COMMAND_NAME = 'so';
-    private UserList $userList;
-    private TranslatorInterface $translator;
 
-    public function __construct(UserList $userList, TranslatorInterface $translator)
+    public function __construct(private readonly UserList $userList, private readonly TranslatorInterface $translator)
     {
-        $this->userList = $userList;
-        $this->translator = $translator;
     }
 
     public function supports(string $name): bool

@@ -8,22 +8,19 @@ use React\Socket\ConnectionInterface;
 
 class Twitch
 {
-    protected CommandDispatcher $commands;
     /** @var string[] */
     private array $badWords = [];
     protected ?ConnectionInterface $connection = null;
     protected bool $running = false;
-    private Tmi\Client $ircClient;
-    private LoggerInterface $logger;
 
     /**
      * @param mixed[] $options
      */
     public function __construct(
-        Tmi\Client $ircClient,
-        LoggerInterface $logger,
+        private readonly Tmi\Client $ircClient,
+        private readonly LoggerInterface $logger,
         array $options,
-        CommandDispatcher $commandDispatcher
+        protected CommandDispatcher $commands
     ) {
         if (PHP_SAPI !== 'cli') {
             trigger_error(
@@ -34,9 +31,6 @@ class Twitch
         if (is_array($options['badwords'])) {
             $this->badWords = $options['badwords'];
         }
-        $this->commands = $commandDispatcher;
-        $this->logger = $logger;
-        $this->ircClient = $ircClient;
     }
 
     public function run(): void

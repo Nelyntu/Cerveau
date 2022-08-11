@@ -5,15 +5,13 @@ namespace Twitch\CommandHandler\Hangman;
 class HangmanSession
 {
     private const NOT_FOUND_CHARACTER = '❓';
-    private string $wordToFind;
     private string $wordFoundByUsers;
     /** @var string[] */
     private array $suggestedLetters = [];
     private int $fails = 0;
 
-    public function __construct(string $wordToFind)
+    public function __construct(private readonly string $wordToFind)
     {
-        $this->wordToFind = $wordToFind;
         $this->wordFoundByUsers = str_repeat(self::NOT_FOUND_CHARACTER, strlen($wordToFind));
     }
 

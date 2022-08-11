@@ -4,14 +4,7 @@ namespace Twitch;
 
 class Response
 {
-    public string $fromUser;
-    public string $channel;
-    public string $message;
-
-    public function __construct(string $channel, string $fromUser, string $message)
+    public function __construct(public string $channel, public string $fromUser, public string $message)
     {
-        $this->channel = $channel;
-        $this->message = $message;
-        $this->fromUser = $fromUser;
     }
 }

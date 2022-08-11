@@ -12,12 +12,9 @@ use Twitch\Twitch;
 #[AsCommand(name: 'bot:run')]
 class BotRunCommand extends Command
 {
-    private Twitch $twitch;
-
-    public function __construct(Twitch $twitch)
+    public function __construct(private readonly Twitch $twitch)
     {
         parent::__construct(self::$defaultName);
-        $this->twitch = $twitch;
     }
 
     protected static $defaultName = 'bot:run';

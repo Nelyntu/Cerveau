@@ -12,17 +12,12 @@ class CommandDispatcher
 {
     /** @var CommandHandlerInterface[] */
     protected array $commands = [];
-    /** @var string[] */
-    private array $commandSymbols;
-    private LoggerInterface $logger;
 
     /**
      * @param string[] $commandSymbols
      */
-    public function __construct(array $commandSymbols, LoggerInterface $logger)
+    public function __construct(private readonly array $commandSymbols, private readonly LoggerInterface $logger)
     {
-        $this->commandSymbols = $commandSymbols;
-        $this->logger = $logger;
     }
 
     public function addCommand(CommandHandlerInterface $command): void

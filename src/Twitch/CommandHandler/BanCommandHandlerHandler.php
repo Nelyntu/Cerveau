@@ -10,13 +10,9 @@ use function in_array;
 class BanCommandHandlerHandler implements CommandHandlerInterface
 {
     private const COMMAND_NAME = 'ban';
-    private UserList $userList;
-    private Twitch $twitch;
 
-    public function __construct(Twitch $twitch, UserList $userList)
+    public function __construct(private readonly Twitch $twitch, private readonly UserList $userList)
     {
-        $this->userList = $userList;
-        $this->twitch = $twitch;
     }
 
     public function supports(string $name): bool

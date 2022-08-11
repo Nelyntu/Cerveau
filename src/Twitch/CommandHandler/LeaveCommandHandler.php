@@ -9,13 +9,9 @@ use Twitch\UserList;
 class LeaveCommandHandler implements CommandHandlerInterface
 {
     private const COMMAND_NAME = 'leave';
-    private UserList $userList;
-    private Tmi\Client $ircClient;
 
-    public function __construct(Tmi\Client $ircClient, UserList $userList)
+    public function __construct(private readonly Tmi\Client $ircClient, private readonly UserList $userList)
     {
-        $this->userList = $userList;
-        $this->ircClient = $ircClient;
     }
 
     public function supports(string $name): bool

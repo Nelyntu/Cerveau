@@ -9,13 +9,9 @@ use Twitch\UserList;
 class StopCommandHandler implements CommandHandlerInterface
 {
     private const COMMAND_NAME = 'stop';
-    private Twitch $twitch;
-    private UserList $userList;
 
-    public function __construct(Twitch $twitch, UserList $userList)
+    public function __construct(private readonly Twitch $twitch, private readonly UserList $userList)
     {
-        $this->twitch = $twitch;
-        $this->userList = $userList;
     }
 
     public function supports(string $name): bool

@@ -4,17 +4,11 @@ namespace Twitch;
 
 class UserList
 {
-    public string $streamer;
-    /** @var string[] */
-    public array $restrictedUsers;
-
     /**
      * @param string[]  $restrictedUsers
      */
-    public function __construct(string $streamer, array $restrictedUsers)
+    public function __construct(public string $streamer, public array $restrictedUsers)
     {
-        $this->streamer = $streamer;
-        $this->restrictedUsers = $restrictedUsers;
     }
 
     /**

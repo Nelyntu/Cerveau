@@ -8,11 +8,9 @@ use Twitch\CommandDispatcher;
 class HelpCommandHandler implements CommandHandlerInterface
 {
     private const COMMAND_NAME = 'help';
-    private CommandDispatcher $commandDispatcher;
 
-    public function __construct(CommandDispatcher $commandDispatcher)
+    public function __construct(private readonly CommandDispatcher $commandDispatcher)
     {
-        $this->commandDispatcher = $commandDispatcher;
     }
 
     public function supports(string $name): bool

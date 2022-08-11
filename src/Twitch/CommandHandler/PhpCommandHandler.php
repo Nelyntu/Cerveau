@@ -9,11 +9,9 @@ use Twitch\UserList;
 class PhpCommandHandler implements CommandHandlerInterface
 {
     private const COMMAND_NAME = 'php';
-    private UserList $userList;
 
-    public function __construct(UserList $userList)
+    public function __construct(private readonly UserList $userList)
     {
-        $this->userList = $userList;
     }
 
     public function supports(string $name): bool

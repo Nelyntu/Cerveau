@@ -11,13 +11,9 @@ use Twitch\CommandHandler\CommandHandlerInterface;
 class HangmanCommandHandler implements CommandHandlerInterface
 {
     private const COMMAND_NAME = 'hg';
-    private FilesystemAdapter $cache;
-    private TranslatorInterface $translator;
 
-    public function __construct(FilesystemAdapter $cache, TranslatorInterface $translator)
+    public function __construct(private readonly FilesystemAdapter $cache, private readonly TranslatorInterface $translator)
     {
-        $this->cache = $cache;
-        $this->translator = $translator;
     }
 
     public function supports(string $name): bool
