@@ -28,6 +28,20 @@ git clone https://github.com/Nelyntu/Cerveau.git
 
 Then run `composer install`.
 
+## Contribution
+
+Run once :
+
+```
+composer install --dev
+```
+
+Commands to run :
+```
+vendor/bin/phpstan analyse src --level 9
+vendor/bin/rector process src
+```
+
 ## Original project
 
 You should know it's a fork from [VZGCoders/TwitchPHP](https://github.com/VZGCoders/TwitchPHP).
