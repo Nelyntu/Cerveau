@@ -29,7 +29,7 @@ class CommandDispatcher
     {
         $command = $this->messageToCommand($message);
 
-        if ($command === null) {
+        if (!$command instanceof \Twitch\Command) {
             return null;
         }
 

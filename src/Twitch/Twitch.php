@@ -61,7 +61,7 @@ class Twitch
      */
     protected function connect(): void
     {
-        if ($this->connection) {
+        if ($this->connection !== null) {
             $this->logger->error('[T][SYMANTICS ERROR] A connection already exists!');
 
             return;
@@ -79,7 +79,7 @@ class Twitch
     protected function process(Message $message): void
     {
         $response = $this->parseMessage($message);
-        if ($response === null) {
+        if (!$response instanceof \Twitch\Response) {
             return;
         }
 
