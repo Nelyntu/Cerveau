@@ -68,7 +68,7 @@ services:
         arguments:
             $channels: '%cerveau.channels%'
             $nick: '%cerveau.streamer.nickname%'
-            $secret: "%env(secret)%"
+            $secret: "%env(CERVEAU_TWITCH_OAUTH)%"
 
     Twitch\Twitch:
         arguments:
@@ -76,7 +76,7 @@ services:
                 badwords: '%cerveau.badWords%'
                 channels: '%cerveau.channels%'
                 nick: '%cerveau.streamer.nickname%'
-                secret: "%env(secret)%"
+                secret: "%env(CERVEAU_TWITCH_OAUTH)%"
 
     Twitch\UserList:
         arguments:

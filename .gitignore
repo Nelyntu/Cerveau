@@ -1,6 +1,4 @@
 /.idea
-secret.php
-settings.php
 
 ###> symfony/framework-bundle ###
 /.env.local
