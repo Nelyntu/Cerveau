@@ -24,9 +24,9 @@ class HangmanCommandHandler implements CommandHandlerInterface
 
     public function handle(Command $command): ?string
     {
+        $wordToFindItemCache = $this->retrieveWord();
         /** @var HangmanSession $session */
-        /** @var CacheItem $wordToFindItemCache */
-        [$wordToFindItemCache, $session] = $this->retrieveWord();
+        $session = $wordToFindItemCache->get();
 
         $suggestedLetter = $command->arguments->firstArgument;
         if ($suggestedLetter === null) {
@@ -102,12 +102,11 @@ class HangmanCommandHandler implements CommandHandlerInterface
     }
 
     /**
-     * @return mixed[]
      * @throws \Psr\Cache\InvalidArgumentException
      */
-    private function retrieveWord(): array
+    private function retrieveWord(): CacheItem
     {
-        $wordToFindItemCache = $this->cache->getItem('cerveau:command:hg:v3:data');
+        $wordToFindItemCache = $this->cache->getItem(self::DATA_CACHE_KEY);
         if (!$wordToFindItemCache->isHit()) {
             // new word !
             $wordToFind = $this->getRandomWord();
@@ -116,11 +115,8 @@ class HangmanCommandHandler implements CommandHandlerInterface
             $wordToFindItemCache->expiresAfter(3600 * 5);
             $wordToFindItemCache->set($session);
             $this->cache->save($wordToFindItemCache);
-        } else {
-            /** @var HangmanSession $session */
-            $session = $wordToFindItemCache->get();
         }
 
-        return [$wordToFindItemCache, $session];
+        return $wordToFindItemCache;
     }
 }
