@@ -10,9 +10,7 @@ parameters:
         - 'Buy followers, primes and viewers'
         - 'bigfollows . com'
         - 'stearncomminuty'
-    cerveau.restrictedUsers:
-        - 'latnel'
-        - 'yanphegor'
+    cerveau.superUsers: '%env(json:CERVEAU_SUPER_USERS)%'
     cerveau.streamer.nickname: '%env(CERVEAU_STREAMER)%'
 
 services:
@@ -83,4 +81,4 @@ services:
     Twitch\UserList:
         arguments:
             $streamer: '%cerveau.streamer.nickname%'
-            $restrictedUsers: '%cerveau.restrictedUsers%'
+            $superUsers: '%cerveau.superUsers%'

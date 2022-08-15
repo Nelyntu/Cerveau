@@ -5,9 +5,9 @@ namespace Twitch;
 class UserList
 {
     /**
-     * @param string[]  $restrictedUsers
+     * @param string[]  $superUsers
      */
-    public function __construct(public string $streamer, public array $restrictedUsers)
+    public function __construct(public string $streamer, public array $superUsers)
     {
     }
 
@@ -16,6 +16,6 @@ class UserList
      */
     public function getAll(): array
     {
-        return array_merge([$this->streamer], $this->restrictedUsers);
+        return array_merge([$this->streamer], $this->superUsers);
     }
 }
