@@ -1,7 +1,7 @@
 Cerveau : Twitch Chat bot
 =========================
 
-A chat self-bot built with ReactPHP for the official [Twitch TV](https://www.twitch.tv) Internet Relay Chat (IRC) interface.
+A chat self-bot built with [tmi](https://github.com/ghostzero/tmi) for the official [Twitch TV](https://www.twitch.tv) Internet Relay Chat (IRC) interface.
 
 It's partially developed during live streams [on Twitch](https://www.twitch.tv/nelyntu_).
 
