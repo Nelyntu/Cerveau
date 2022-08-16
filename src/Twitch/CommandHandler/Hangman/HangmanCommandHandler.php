@@ -11,7 +11,7 @@ use Twitch\CommandHandler\CommandHandlerInterface;
 class HangmanCommandHandler implements CommandHandlerInterface
 {
     private const COMMAND_NAME = 'hg';
-    public const DATA_CACHE_KEY = 'cerveau:command:hg:v3:data';
+    final public const DATA_CACHE_KEY = 'cerveau:command:hg:v3:data';
 
     public function __construct(private readonly FilesystemAdapter $cache, private readonly TranslatorInterface $translator)
     {
@@ -96,6 +96,7 @@ class HangmanCommandHandler implements CommandHandlerInterface
     public function getRandomWord(): string
     {
         $locale = $this->translator->getLocale();
+        /** @var non-empty-array<int, string> $possibleWords */
         $possibleWords = file(__DIR__.'/words.'. $locale .'.txt', FILE_IGNORE_NEW_LINES);
 
         return mb_strtoupper($possibleWords[random_int(0, count($possibleWords) - 1)]);
