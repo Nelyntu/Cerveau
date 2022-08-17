@@ -2,17 +2,11 @@
 
 namespace Twitch\CommandHandler;
 
-use Symfony\Component\Cache\Adapter\FilesystemAdapter;
-use Symfony\Contracts\Translation\TranslatorInterface;
 use Twitch\Command;
 
-class HeightBallCommand implements CommandHandlerInterface
+class HeightBallCommand extends CoolDownableCommandHandler
 {
     private const COMMAND_NAME = 'question';
-
-    public function __construct(private readonly FilesystemAdapter $cache, private readonly TranslatorInterface $translator)
-    {
-    }
 
     public function supports(string $name): bool
     {
@@ -21,14 +15,10 @@ class HeightBallCommand implements CommandHandlerInterface
 
     public function handle(Command $command): ?string
     {
-        // cooldown detection
-        $coolDownItemCache = $this->cache->getItem('cerveau:command:question:cooldown:' . $command->user);
-        if ($coolDownItemCache->isHit()) {
-            return $this->translator->trans('commands.question.triggered_cooldown', [], 'commands');
+        $coolDownCheck = $this->checkUserCoolDown($command);
+        if (is_string($coolDownCheck)) {
+            return $coolDownCheck;
         }
-
-        $coolDownItemCache->expiresAfter(30);
-        $this->cache->save($coolDownItemCache);
 
         // main code
         $possibleResponses = [

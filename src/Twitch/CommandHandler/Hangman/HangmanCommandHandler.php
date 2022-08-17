@@ -2,23 +2,15 @@
 
 namespace Twitch\CommandHandler\Hangman;
 
-use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Cache\CacheItem;
-use Symfony\Contracts\Translation\TranslatorInterface;
 use Twitch\Command;
-use Twitch\CommandHandler\CommandHandlerInterface;
+use Twitch\CommandHandler\CoolDownableCommandHandler;
 
-class HangmanCommandHandler implements CommandHandlerInterface
+class HangmanCommandHandler extends CoolDownableCommandHandler
 {
     private const COMMAND_NAME = 'hg';
     private const MAX_TRY = 9;
     final public const DATA_CACHE_KEY = 'cerveau:command:hg:v3:data';
-
-    public function __construct(
-        private readonly FilesystemAdapter $cache,
-        private readonly TranslatorInterface $translator
-    ) {
-    }
 
     public function supports(string $name): bool
     {
@@ -45,20 +37,10 @@ class HangmanCommandHandler implements CommandHandlerInterface
 
         $suggestedLetter = mb_strtoupper($suggestedLetter);
 
-        // cooldown detection
-        $coolDownItemCache = $this->cache->getItem('cerveau:command:hg:cooldown:' . $command->user);
-        if ($coolDownItemCache->isHit()) {
-            $remainingCoolDownTime = (int)($coolDownItemCache->get() - microtime(true));
-
-            return $this->translator->trans(
-                'commands.hg.triggered_cooldown',
-                ['%remainingCoolDownTime%' => $remainingCoolDownTime],
-                'commands');
+        $coolDownCheck = $this->checkUserCoolDown($command);
+        if (is_string($coolDownCheck)) {
+            return $coolDownCheck;
         }
-
-        $coolDownItemCache->expiresAfter(1);
-        $coolDownItemCache->set(1 + microtime(true));
-        $this->cache->save($coolDownItemCache);
 
         if ($session->isLetterAlreadySuggested($suggestedLetter)) {
             return $this->translator->trans(

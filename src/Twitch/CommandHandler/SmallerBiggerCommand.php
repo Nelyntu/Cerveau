@@ -2,17 +2,11 @@
 
 namespace Twitch\CommandHandler;
 
-use Symfony\Component\Cache\Adapter\FilesystemAdapter;
-use Symfony\Contracts\Translation\TranslatorInterface;
 use Twitch\Command;
 
-class SmallerBiggerCommand implements CommandHandlerInterface
+class SmallerBiggerCommand extends CoolDownableCommandHandler
 {
     private const COMMAND_NAME = 'sb';
-
-    public function __construct(private readonly FilesystemAdapter $cache, private readonly TranslatorInterface $translator)
-    {
-    }
 
     public function supports(string $name): bool
     {
@@ -32,16 +26,10 @@ class SmallerBiggerCommand implements CommandHandlerInterface
 
         $suggestedValue = (int)$suggestedValue;
 
-        // cooldown detection
-        $coolDownItemCache = $this->cache->getItem('cerveau:command:sb:cooldown:' . $command->user);
-        if ($coolDownItemCache->isHit()) {
-            $remainingCoolDownTime = (int)($coolDownItemCache->get() - microtime(true));
-
-            return $this->translator->trans('commands.sb.triggered_cooldown', ['%remainingCoolDownTime%' => $remainingCoolDownTime], 'commands');
+        $coolDownCheck = $this->checkUserCoolDown($command);
+        if (is_string($coolDownCheck)) {
+            return $coolDownCheck;
         }
-        $coolDownItemCache->expiresAfter(30);
-        $coolDownItemCache->set(30 + microtime(true));
-        $this->cache->save($coolDownItemCache);
 
         // retrieve value
 
