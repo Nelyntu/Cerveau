@@ -4,13 +4,11 @@ namespace Twitch;
 
 use GhostZero\Tmi;
 use Psr\Log\LoggerInterface;
-use React\Socket\ConnectionInterface;
 
 class Twitch
 {
     /** @var string[] */
     private array $badWords = [];
-    protected ?ConnectionInterface $connection = null;
     protected bool $running = false;
 
     /**
@@ -56,17 +54,9 @@ class Twitch
 
     /**
      * Connect the bot to Twitch
-     * This command should not be run while the bot is still connected to Twitch
-     * Additional handling may be needed in the case of disconnect via $connection->on('close' (See: Issue #1 on GitHub)
      */
     protected function connect(): void
     {
-        if ($this->connection !== null) {
-            $this->logger->error('[T][SYMANTICS ERROR] A connection already exists!');
-
-            return;
-        }
-
         $this->ircClient->on(Tmi\Events\Twitch\MessageEvent::class, function (Tmi\Events\Twitch\MessageEvent $e) {
             $message = new Message($e->channel, $e->user, $e->message);
 
