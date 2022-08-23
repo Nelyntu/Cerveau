@@ -19,6 +19,10 @@ services:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
 
+    _instanceof:
+        \Twitch\CommandHandler\CommandHandlerInterface:
+            tags: ['cerveau.command']
+
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
     App\:
@@ -43,18 +47,8 @@ services:
         arguments:
             $commandSymbols: ['!']
         calls:
-            - addCommand: ['@Twitch\CommandHandler\BanCommandHandlerHandler']
-            - addCommand: ['@Twitch\CommandHandler\HelpCommandHandler']
-            - addCommand: ['@Twitch\CommandHandler\JoinCommandHandler']
-            - addCommand: ['@Twitch\CommandHandler\LeaveCommandHandler']
-            - addCommand: ['@Twitch\CommandHandler\PhpCommandHandler']
-            - addCommand: ['@Twitch\CommandHandler\SoCommandHandler']
-            - addCommand: ['@Twitch\CommandHandler\StopCommandHandler']
-            - addCommand: ['@Twitch\CommandHandler\ResponseCommandHandler']
-            - addCommand: ['@Twitch\CommandHandler\HeightBallCommand']
-            - addCommand: ['@Twitch\CommandHandler\SmallerBiggerCommand']
-            - addCommand: ['@Twitch\CommandHandler\Hangman\HangmanCommandHandler']
-            - addCommand: ['@Twitch\CommandHandler\Hangman\HangmanResetCommandHandler']
+            - setCommands:
+                $commands: !tagged_iterator cerveau.command
 
     Twitch\CommandHandler\ResponseCommandHandler:
         arguments:

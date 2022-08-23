@@ -20,9 +20,12 @@ class CommandDispatcher
     {
     }
 
-    public function addCommand(CommandHandlerInterface $command): void
+    /**
+     * @param iterable<CommandHandlerInterface> $commands
+     */
+    public function setCommands(iterable $commands): void
     {
-        $this->commands[] = $command;
+        $this->commands = [...$commands];
     }
 
     public function handle(Message $message): ?string

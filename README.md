@@ -40,18 +40,9 @@ Settings are in `.env` file :
 
 Customization is all about custom commands.
 
-2 steps :
+Just create your class which implements `\Twitch\CommandHandler\CommandHandlerInterface` (take a look at [!php](src/Twitch/CommandHandler/PhpCommandHandler.php) as example)
 
-* Create your class which implements `\Twitch\CommandHandler\CommandHandlerInterface` (take a look at [!php](src/Twitch/CommandHandler/PhpCommandHandler.php) as example)
-* Add your command to the CommandDispatcher editing `config/services.yaml` in the `calls` segment:
-
-```
-    Twitch\CommandDispatcher:
-        arguments:
-            $commandSymbols: ['!']
-        calls:
-            - addCommand: ['@Twitch\CommandHandler\MyAwesomeNewCommandHandlerHandler']
-```
+Optionally, the bot will respond to the chat with the string returned by the `handle` method.
 
 As alternative, you can extend `\Twitch\CommandHandler\CoolDownableCommandHandler`.
 
