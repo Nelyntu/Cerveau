@@ -1,11 +1,11 @@
 <?php
 
-namespace Twitch\CommandHandler;
+namespace Cerveau\CommandHandler;
 
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Twitch\Command;
-use Twitch\Twitch;
-use Twitch\UserList;
+use Cerveau\Command;
+use Cerveau\Bot;
+use Cerveau\UserList;
 use function in_array;
 
 class SoCommandHandler implements CommandHandlerInterface

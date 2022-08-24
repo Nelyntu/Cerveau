@@ -1,9 +1,9 @@
 <?php
 
-namespace Twitch\CommandHandler;
+namespace Cerveau\CommandHandler;
 
-use Twitch\Command;
-use Twitch\CommandDispatcher;
+use Cerveau\Command;
+use Cerveau\CommandDispatcher;
 
 class HelpCommandHandler implements CommandHandlerInterface
 {

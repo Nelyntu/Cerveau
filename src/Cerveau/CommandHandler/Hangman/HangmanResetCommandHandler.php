@@ -1,11 +1,11 @@
 <?php
 
-namespace Twitch\CommandHandler\Hangman;
+namespace Cerveau\CommandHandler\Hangman;
 
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
-use Twitch\Command;
-use Twitch\CommandHandler\CommandHandlerInterface;
-use Twitch\UserList;
+use Cerveau\Command;
+use Cerveau\CommandHandler\CommandHandlerInterface;
+use Cerveau\UserList;
 
 class HangmanResetCommandHandler implements CommandHandlerInterface
 {

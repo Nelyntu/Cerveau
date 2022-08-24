@@ -1,6 +1,6 @@
 <?php
 
-namespace Twitch\CommandHandler\Hangman;
+namespace Cerveau\CommandHandler\Hangman;
 
 class HangmanSession
 {

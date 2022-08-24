@@ -1,17 +1,17 @@
 <?php
 
-namespace Twitch\CommandHandler;
+namespace Cerveau\CommandHandler;
 
-use Twitch\Command;
-use Twitch\Twitch;
-use Twitch\UserList;
+use Cerveau\Command;
+use Cerveau\Bot;
+use Cerveau\UserList;
 use function in_array;
 
 class BanCommandHandlerHandler implements CommandHandlerInterface
 {
     private const COMMAND_NAME = 'ban';
 
-    public function __construct(private readonly Twitch $twitch, private readonly UserList $userList)
+    public function __construct(private readonly Bot $twitch, private readonly UserList $userList)
     {
     }
 

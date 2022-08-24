@@ -1,10 +1,10 @@
 <?php
 
-namespace Twitch\CommandHandler\Hangman;
+namespace Cerveau\CommandHandler\Hangman;
 
 use Symfony\Component\Cache\CacheItem;
-use Twitch\Command;
-use Twitch\CommandHandler\CoolDownableCommandHandler;
+use Cerveau\Command;
+use Cerveau\CommandHandler\CoolDownableCommandHandler;
 
 class HangmanCommandHandler extends CoolDownableCommandHandler
 {

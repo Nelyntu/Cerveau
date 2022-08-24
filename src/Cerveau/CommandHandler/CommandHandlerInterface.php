@@ -1,8 +1,8 @@
 <?php
 
-namespace Twitch\CommandHandler;
+namespace Cerveau\CommandHandler;
 
-use Twitch\Command;
+use Cerveau\Command;
 
 interface CommandHandlerInterface
 {

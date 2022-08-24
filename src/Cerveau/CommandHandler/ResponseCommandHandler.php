@@ -1,9 +1,9 @@
 <?php
 
-namespace Twitch\CommandHandler;
+namespace Cerveau\CommandHandler;
 
-use Twitch\Command;
-use Twitch\Twitch;
+use Cerveau\Command;
+use Cerveau\Bot;
 
 class ResponseCommandHandler implements CommandHandlerInterface
 {

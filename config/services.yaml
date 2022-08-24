@@ -20,7 +20,7 @@ services:
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
 
     _instanceof:
-        \Twitch\CommandHandler\CommandHandlerInterface:
+        \Cerveau\CommandHandler\CommandHandlerInterface:
             tags: ['cerveau.command']
 
     # makes classes in src/ available to be used as services
@@ -32,25 +32,25 @@ services:
             - '../src/App/Entity/'
             - '../src/App/Kernel.php'
 
-    Twitch\:
-        resource: '../src/Twitch'
+    Cerveau\:
+        resource: '../src/Cerveau'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 
     GhostZero\Tmi\Client:
-        factory: ['@Twitch\IRCClientFactory', 'createClient']
+        factory: ['@Cerveau\IRCClientFactory', 'createClient']
 
     Symfony\Component\Cache\Adapter\FilesystemAdapter: ~
 
-    Twitch\CommandDispatcher:
+    Cerveau\CommandDispatcher:
         arguments:
             $commandSymbols: ['!']
         calls:
             - setCommands:
                 $commands: !tagged_iterator cerveau.command
 
-    Twitch\CommandHandler\ResponseCommandHandler:
+    Cerveau\CommandHandler\ResponseCommandHandler:
         arguments:
             $responses:
                 ping: Pong!
@@ -58,13 +58,13 @@ services:
                 lurk: You have said the magick word to make yourself invisible to all eyes upon you, allowing you to fade into the shadows.
                 return: You have rolled a Nat 1, clearing your invisibility buff from earlier. You might want to roll for initiative…
 
-    Twitch\IRCClientFactory:
+    Cerveau\IRCClientFactory:
         arguments:
             $channels: '%cerveau.channels%'
             $nick: '%cerveau.streamer.nickname%'
             $secret: "%env(CERVEAU_TWITCH_OAUTH)%"
 
-    Twitch\Twitch:
+    Cerveau\Bot:
         arguments:
             $options:
                 badwords: '%cerveau.badWords%'
@@ -72,7 +72,7 @@ services:
                 nick: '%cerveau.streamer.nickname%'
                 secret: "%env(CERVEAU_TWITCH_OAUTH)%"
 
-    Twitch\UserList:
+    Cerveau\UserList:
         arguments:
             $streamer: '%cerveau.streamer.nickname%'
             $superUsers: '%cerveau.superUsers%'

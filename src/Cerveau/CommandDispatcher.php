@@ -1,9 +1,9 @@
 <?php
 
-namespace Twitch;
+namespace Cerveau;
 
 use Psr\Log\LoggerInterface;
-use Twitch\CommandHandler\CommandHandlerInterface;
+use Cerveau\CommandHandler\CommandHandlerInterface;
 
 /**
  * Provides an easy way to handle commands.
@@ -32,7 +32,7 @@ class CommandDispatcher
     {
         $command = $this->messageToCommand($message);
 
-        if (!$command instanceof \Twitch\Command) {
+        if (!$command instanceof \Cerveau\Command) {
             return null;
         }
 

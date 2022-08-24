@@ -1,10 +1,10 @@
 <?php
 
-namespace Twitch\CommandHandler;
+namespace Cerveau\CommandHandler;
 
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Twitch\Command;
+use Cerveau\Command;
 
 abstract class CoolDownableCommandHandler implements CommandHandlerInterface
 {

@@ -1,16 +1,16 @@
 <?php
 
-namespace Twitch\CommandHandler;
+namespace Cerveau\CommandHandler;
 
-use Twitch\Command;
-use Twitch\Twitch;
-use Twitch\UserList;
+use Cerveau\Command;
+use Cerveau\Bot;
+use Cerveau\UserList;
 
-class PhpCommandHandler implements CommandHandlerInterface
+class StopCommandHandler implements CommandHandlerInterface
 {
-    private const COMMAND_NAME = 'php';
+    private const COMMAND_NAME = 'stop';
 
-    public function __construct(private readonly UserList $userList)
+    public function __construct(private readonly Bot $twitch, private readonly UserList $userList)
     {
     }
 
@@ -21,7 +21,9 @@ class PhpCommandHandler implements CommandHandlerInterface
 
     public function handle(Command $command): ?string
     {
-        return 'Current PHP version: ' . PHP_VERSION;
+        $this->twitch->close();
+
+        return null;
     }
 
     public function isAuthorized(string $username): bool

@@ -1,14 +1,14 @@
 <?php
 
-namespace Twitch\CommandHandler;
+namespace Cerveau\CommandHandler;
 
 use GhostZero\Tmi;
-use Twitch\Command;
-use Twitch\UserList;
+use Cerveau\Command;
+use Cerveau\UserList;
 
-class LeaveCommandHandler implements CommandHandlerInterface
+class JoinCommandHandler implements CommandHandlerInterface
 {
-    private const COMMAND_NAME = 'leave';
+    private const COMMAND_NAME = 'join';
 
     public function __construct(private readonly Tmi\Client $ircClient, private readonly UserList $userList)
     {
@@ -21,11 +21,11 @@ class LeaveCommandHandler implements CommandHandlerInterface
 
     public function handle(Command $command): ?string
     {
-        if ($command->arguments->firstArgument === null) {
+        $channel = $command->arguments->firstArgument;
+        if ($channel === null) {
             return null;
         }
-
-        $this->ircClient->part($command->arguments->firstArgument);
+        $this->ircClient->join($channel);
 
         return null;
     }

@@ -1,11 +1,11 @@
 <?php
 
-namespace Twitch;
+namespace Cerveau;
 
 use GhostZero\Tmi;
 use Psr\Log\LoggerInterface;
 
-class Twitch
+class Bot
 {
     /** @var string[] */
     private array $badWords = [];
@@ -69,7 +69,7 @@ class Twitch
     protected function process(Message $message): void
     {
         $response = $this->parseMessage($message);
-        if (!$response instanceof \Twitch\Response) {
+        if (!$response instanceof \Cerveau\Response) {
             return;
         }
 
