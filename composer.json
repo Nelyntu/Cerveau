@@ -11,6 +11,7 @@
     "ext-ctype": "*",
     "ext-iconv": "*",
     "ext-mbstring": "*",
+    "ext-pcntl": "*",
     "ghostzero/tmi": "^2.3",
     "symfony/cache": "6.1.*",
     "symfony/console": "6.1.*",
