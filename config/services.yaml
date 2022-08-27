@@ -18,6 +18,8 @@ services:
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+        bind:
+            $streamer: '%cerveau.streamer.nickname%'
 
     _instanceof:
         \Cerveau\CommandHandler\CommandHandlerInterface:
@@ -74,5 +76,4 @@ services:
 
     Cerveau\UserList:
         arguments:
-            $streamer: '%cerveau.streamer.nickname%'
             $superUsers: '%cerveau.superUsers%'
