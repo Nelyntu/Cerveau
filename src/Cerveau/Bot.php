@@ -73,11 +73,6 @@ class Bot
             return;
         }
 
-        // why this code ?
-        // does it ban someone that the bot says bad words ?
-        if ($this->badWordsCheck($response->message)) {
-            $this->ban($response->channel, $response->fromUser);
-        }
         $payload = '@' . $response->fromUser . ', ' . $response->message . "\n";
         $this->ircClient->say($response->channel, $payload);
     }
