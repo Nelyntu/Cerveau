@@ -4,7 +4,6 @@ namespace App\Command;
 
 use Cerveau\AutoMessage;
 use Cerveau\Bot;
-use Cerveau\OnStart;
 use GhostZero\Tmi\Client;
 use GhostZero\Tmi\Events\Irc\WelcomeEvent;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -26,8 +25,6 @@ class BotRunCommand extends Command
     ) {
         parent::__construct(self::$defaultName);
     }
-
-    protected static $defaultName = 'bot:run';
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
