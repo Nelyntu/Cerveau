@@ -2,6 +2,7 @@
 
 namespace App\Command;
 
+use Cerveau\AutoMessage;
 use Cerveau\Bot;
 use Cerveau\OnStart;
 use GhostZero\Tmi\Client;
@@ -20,7 +21,8 @@ class BotRunCommand extends Command
         private readonly Bot $twitch,
         private readonly Client $client,
         private readonly string $streamer,
-        protected readonly TranslatorInterface $translator
+        private readonly TranslatorInterface $translator,
+        private readonly AutoMessage $autoMessage
     ) {
         parent::__construct(self::$defaultName);
     }
@@ -32,6 +34,9 @@ class BotRunCommand extends Command
         // on bot start
         $this->client->on(WelcomeEvent::class, function (WelcomeEvent $e): void {
             $this->client->say($this->streamer, $this->translator->trans('bot.start', [], 'bot'));
+
+            // start auto message
+            $this->autoMessage->start();
         });
 
         // on bot end (CTRL+C)

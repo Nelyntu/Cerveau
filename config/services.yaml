@@ -12,6 +12,7 @@ parameters:
         - 'stearncomminuty'
     cerveau.superUsers: '%env(json:CERVEAU_SUPER_USERS)%'
     cerveau.streamer.nickname: '%env(CERVEAU_STREAMER)%'
+    cerveau.automessages.messages: '%env(json:CERVEAU_AUTOMESSAGES_MESSAGES)%'
 
 services:
     # default configuration for services in *this* file
@@ -44,6 +45,13 @@ services:
         factory: ['@Cerveau\IRCClientFactory', 'createClient']
 
     Symfony\Component\Cache\Adapter\FilesystemAdapter: ~
+
+    Cerveau\AutoMessage:
+        arguments:
+            $interval: 20
+        calls:
+            - setMessages:
+                  $messages: '%cerveau.automessages.messages%'
 
     Cerveau\CommandDispatcher:
         arguments:
