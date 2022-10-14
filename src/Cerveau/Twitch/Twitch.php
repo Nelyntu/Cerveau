@@ -16,10 +16,13 @@ class Twitch
         $accessToken = $this->getAccessToken('');
         $response = $this->twitchApi->getUsersApi()->getUserByUsername($accessToken, $name);
 
-        $decodedResponse = json_decode((string)$response->getBody(), true);
+        /** @var array{data: array<array{id: int, login: string, display_name: string, display_name: string, created_at: string}>} $decodedResponse */
+        $decodedResponse = json_decode((string)$response->getBody(), true, 512, JSON_THROW_ON_ERROR);
         $data = $decodedResponse['data'][0];
 
-        return new User($data['id'], $data['login'], $data['display_name'], $data['broadcaster_type'], \DateTimeImmutable::createFromFormat('Y-m-d\TH:i:sp', $data['created_at']));
+        /** @var \DateTimeImmutable $since */
+        $since = \DateTimeImmutable::createFromFormat('Y-m-d\TH:i:sp', $data['created_at']);
+        return new User($data['id'], $data['login'], $data['display_name'], $data['display_name'], $since);
     }
 
     /**
@@ -34,18 +37,15 @@ class Twitch
 
         do {
             $response = $this->twitchApi->getUsersApi()
-                ->getUsersFollows($accessToken, null, $user->id, 100, $cursor);
-            $decodedResponse = json_decode((string)$response->getBody(), true);
+                ->getUsersFollows($accessToken, null, (string)$user->id, 100, $cursor);
+            /** @var array{data: array<array{from_id: int, from_login: string, from_name: string}>, pagination: array{cursor?: string}} $decodedResponse */
+            $decodedResponse = json_decode((string)$response->getBody(), true, 512, JSON_THROW_ON_ERROR);
 
             foreach ($decodedResponse['data'] as $relation) {
                 $followers[] = new Follower($relation['from_id'], $relation['from_login'], $relation['from_name']);
             }
 
-            if (array_key_exists('cursor', $decodedResponse['pagination'])) {
-                $cursor = $decodedResponse['pagination']['cursor'];
-            } else {
-                $cursor = null;
-            };
+            $cursor = $decodedResponse['pagination']['cursor'] ?? null;;
             $goNextPage = $cursor !== null;
         } while ($goNextPage);
 
@@ -74,16 +74,18 @@ class Twitch
         $accessTokenItemCacheKey = 'cerveau:twitch:accesstoken:' . $twitchScopes;
         $accessTokenItemCache = $this->cache->getItem($accessTokenItemCacheKey);
         if ($accessTokenItemCache->isHit()) {
+            /** @var string */
             return $accessTokenItemCache->get();
         }
 
         $oauth = $this->twitchApi->getOauthApi();
 
         $token = $oauth->getAppAccessToken($twitchScopes);
-        $data = json_decode($token->getBody()->getContents());
+        /** @var array{access_token: string, expires_in: int} $data */
+        $data = json_decode($token->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
 
-        $accessToken = $data->access_token;
-        $expiresIn = $data->expires_in;
+        $accessToken = $data['access_token'];
+        $expiresIn = $data['expires_in'];
 
         $accessTokenItemCache->expiresAfter($expiresIn - 30);
         $accessTokenItemCache->set($accessToken);
