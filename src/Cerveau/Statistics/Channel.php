@@ -2,8 +2,8 @@
 
 namespace Cerveau\Statistics;
 
-use Cerveau\ThirdPartyApis\Twitch;
 use Cerveau\ThirdPartyApis\TwitchInsights;
+use Cerveau\Twitch\Twitch;
 
 class Channel
 {

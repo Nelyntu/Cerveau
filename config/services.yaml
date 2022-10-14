@@ -44,7 +44,7 @@ services:
     # please note that last definitions always *replace* previous ones
 
     GhostZero\Tmi\Client:
-        factory: ['@Cerveau\IRCClientFactory', 'createClient']
+        factory: ['@Cerveau\Factory\IRCClientFactory', 'createClient']
 
     Symfony\Component\Cache\Adapter\FilesystemAdapter: ~
 
@@ -73,7 +73,7 @@ services:
                 lurk: You have said the magick word to make yourself invisible to all eyes upon you, allowing you to fade into the shadows.
                 return: You have rolled a Nat 1, clearing your invisibility buff from earlier. You might want to roll for initiative…
 
-    Cerveau\IRCClientFactory:
+    Cerveau\Factory\IRCClientFactory:
         arguments:
             $channels: '%cerveau.channels%'
             $nick: '%cerveau.streamer.nickname%'

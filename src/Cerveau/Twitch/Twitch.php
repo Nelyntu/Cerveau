@@ -1,9 +1,7 @@
 <?php
 
-namespace Cerveau\ThirdPartyApis;
+namespace Cerveau\Twitch;
 
-use Cerveau\Twitch\Follower;
-use Cerveau\Twitch\User;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use TwitchApi\TwitchApi;
 

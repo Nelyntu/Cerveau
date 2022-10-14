@@ -1,6 +1,6 @@
 <?php
 
-namespace Cerveau;
+namespace Cerveau\Factory;
 
 use GhostZero\Tmi\Client;
 use GhostZero\Tmi\ClientOptions;
