@@ -13,16 +13,17 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 // the name of the command is what users type after "php bin/console"
-#[AsCommand(name: 'bot:run')]
+#[AsCommand(name: 'cerveau:bot:run')]
 class BotRunCommand extends Command
 {
     public function __construct(
-        private readonly Bot $twitch,
-        private readonly Client $client,
-        private readonly string $streamer,
+        private readonly Bot                 $bot,
+        private readonly Client              $client,
+        private readonly string              $streamer,
         private readonly TranslatorInterface $translator,
-        private readonly AutoMessage $autoMessage
-    ) {
+        private readonly AutoMessage         $autoMessage,
+    )
+    {
         parent::__construct(self::$defaultName);
     }
 
@@ -46,7 +47,7 @@ class BotRunCommand extends Command
         });
 
         // start
-        $this->twitch->run();
+        $this->bot->run();
 
         return Command::SUCCESS;
     }
