@@ -4,6 +4,7 @@ namespace App\Command;
 
 use Cerveau\AutoMessage;
 use Cerveau\Bot;
+use Cerveau\Statistics\Statistics;
 use GhostZero\Tmi\Client;
 use GhostZero\Tmi\Events\Irc\WelcomeEvent;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -22,6 +23,7 @@ class BotRunCommand extends Command
         private readonly string              $streamer,
         private readonly TranslatorInterface $translator,
         private readonly AutoMessage         $autoMessage,
+        private readonly Statistics          $statistics
     )
     {
         parent::__construct(self::$defaultName);
@@ -35,6 +37,7 @@ class BotRunCommand extends Command
 
             // start auto message
             $this->autoMessage->start();
+            $this->statistics->init();
         });
 
         // on bot end (CTRL+C)

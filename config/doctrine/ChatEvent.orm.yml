@@ -1,0 +1,21 @@
+Cerveau\Entity\ChatEvent:
+  type: entity
+  table: chat_event
+  id:
+    id:
+      type: integer
+      generator:
+        strategy: AUTO
+  fields:
+    username:
+      type: string
+      nullable: false
+    channel:
+      type: string
+      nullable: false
+    createdAt:
+      type: datetime_immutable
+      nullable: false
+    type:
+      type: string
+      nullable: false

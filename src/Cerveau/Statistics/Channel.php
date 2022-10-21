@@ -36,4 +36,13 @@ class Channel
 
         return array_diff($allChatters, $bots);
     }
+
+    public static function sanitize(string $channel): string
+    {
+        if ($channel[0] === '#') {
+            $channel = substr($channel, 1);
+        }
+
+        return strtolower($channel);
+    }
 }
