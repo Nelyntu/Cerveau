@@ -45,4 +45,9 @@ class Channel
 
         return strtolower($channel);
     }
+
+    public function isBot(string $username): bool
+    {
+        return $this->twitchInsights->isBot($username);
+    }
 }

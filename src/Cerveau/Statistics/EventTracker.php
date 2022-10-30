@@ -4,7 +4,6 @@ namespace Cerveau\Statistics;
 
 use Cerveau\Entity\ChatEvent;
 use Cerveau\Repository\ChatEventRepository;
-use Cerveau\ThirdPartyApis\TwitchInsights;
 use DateTimeImmutable;
 use GhostZero\Tmi;
 use GhostZero\Tmi\Events\Irc\JoinEvent;
@@ -19,7 +18,6 @@ class EventTracker
 
     public function __construct(
         private readonly Channel             $channel,
-        private readonly TwitchInsights      $twitchInsights,
         private readonly Tmi\Client          $tmiClient,
         private readonly ChatEventRepository $chatEventRepository
     )
@@ -51,7 +49,7 @@ class EventTracker
 
             $username = $event->user;
 
-            if ($this->twitchInsights->isBot($username)) {
+            if ($this->channel->isBot($username)) {
                 return;
             }
 
@@ -63,7 +61,7 @@ class EventTracker
                 return;
             }
 
-//            $this->tmiClient->say($this->streamer, 'Coucou ' . $username . ' !');
+//            $this->tmiClient->say($this->streamer, 'Hello ' . $username . ' !');
 
             $this->chatters[] = $username;
         });
@@ -81,7 +79,7 @@ class EventTracker
 
             $this->chatEventRepository->add($chatEvent);
 
-//            $this->tmiClient->say($event->channel, 'Au revoir ' . $event->user . '!');
+//            $this->tmiClient->say($event->channel, 'Bye ' . $event->user . '!');
 
             unset($this->chatters[$userKey]);
         });
@@ -93,7 +91,7 @@ class EventTracker
 
             $username = $event->user;
 
-            if ($this->twitchInsights->isBot($username)) {
+            if ($this->channel->isBot($username)) {
                 return;
             }
 
@@ -105,7 +103,7 @@ class EventTracker
                 return;
             }
 
-//            $this->tmiClient->say($this->streamer, 'Coucou ' . $username . ' !');
+//            $this->tmiClient->say($this->streamer, 'Hello ' . $username . ' !');
 
             $this->chatters[] = $username;
         });
