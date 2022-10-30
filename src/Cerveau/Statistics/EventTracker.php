@@ -12,7 +12,7 @@ use GhostZero\Tmi\Events\Irc\PartEvent;
 use GhostZero\Tmi\Events\Twitch\MessageEvent;
 use function in_array;
 
-class Statistics
+class EventTracker
 {
     /** @var string[] */
     private array $chatters;
@@ -26,9 +26,13 @@ class Statistics
     {
     }
 
-    public function init(string $channel): void
+    public function startTracking(string $channel): void
     {
         $this->chatters = $this->channel->getRealChatters($channel);
+
+        $chatEvent = new ChatEvent($channel, $channel, new DateTimeImmutable(), 'start');
+
+        $this->chatEventRepository->add($chatEvent);
 
         foreach ($this->chatters as $chatter) {
             $chatEvent = new ChatEvent($chatter, $channel, new DateTimeImmutable(), 'init');
@@ -77,7 +81,8 @@ class Statistics
 
             $this->chatEventRepository->add($chatEvent);
 
-            $this->tmiClient->say($event->channel, 'Au revoir ' . $event->user . '!');
+//            $this->tmiClient->say($event->channel, 'Au revoir ' . $event->user . '!');
+
             unset($this->chatters[$userKey]);
         });
 

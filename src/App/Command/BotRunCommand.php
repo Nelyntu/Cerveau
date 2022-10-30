@@ -4,7 +4,7 @@ namespace App\Command;
 
 use Cerveau\AutoMessage;
 use Cerveau\Bot;
-use Cerveau\Factory\StatisticsFactory;
+use Cerveau\Factory\EventTrackerFactory;
 use GhostZero\Tmi\Client;
 use GhostZero\Tmi\Events\Irc\WelcomeEvent;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -25,7 +25,7 @@ class BotRunCommand extends Command
         private readonly Client              $client,
         private readonly TranslatorInterface $translator,
         private readonly AutoMessage         $autoMessage,
-        private readonly StatisticsFactory   $statisticsFactory,
+        private readonly EventTrackerFactory $statisticsFactory,
         private readonly array               $channels,
     )
     {
@@ -41,7 +41,7 @@ class BotRunCommand extends Command
 
                 // start auto message
                 $this->autoMessage->start();
-                $this->statisticsFactory->createStatistics()->init($channel);
+                $this->statisticsFactory->create()->startTracking($channel);
             }
         });
 

@@ -4,11 +4,11 @@ namespace Cerveau\Factory;
 
 use Cerveau\Repository\ChatEventRepository;
 use Cerveau\Statistics\Channel;
-use Cerveau\Statistics\Statistics;
+use Cerveau\Statistics\EventTracker;
 use Cerveau\ThirdPartyApis\TwitchInsights;
 use GhostZero\Tmi;
 
-class StatisticsFactory
+class EventTrackerFactory
 {
     public function __construct(private readonly Channel             $channel,
                                 private readonly TwitchInsights      $twitchInsights,
@@ -18,8 +18,8 @@ class StatisticsFactory
     {
     }
 
-    public function createStatistics(): Statistics
+    public function create(): EventTracker
     {
-        return new Statistics($this->channel, $this->twitchInsights, $this->tmiClient, $this->chatEventRepository);
+        return new EventTracker($this->channel, $this->twitchInsights, $this->tmiClient, $this->chatEventRepository);
     }
 }
