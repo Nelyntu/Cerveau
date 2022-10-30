@@ -7,7 +7,7 @@ class UserList
     /**
      * @param string[]  $superUsers
      */
-    public function __construct(public string $streamer, public array $superUsers)
+    public function __construct(public string $botNickname, public array $superUsers)
     {
     }
 
@@ -16,6 +16,6 @@ class UserList
      */
     public function getAll(): array
     {
-        return array_merge([$this->streamer], $this->superUsers);
+        return array_merge([$this->botNickname], $this->superUsers);
     }
 }

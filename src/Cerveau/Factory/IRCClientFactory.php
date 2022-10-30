@@ -10,7 +10,7 @@ class IRCClientFactory
     /**
      * @param string[]  $channels
      */
-    public function __construct(private readonly string $nick, private readonly array $channels, private readonly string $secret)
+    public function __construct(private readonly string $botNickname, private readonly array $channels, private readonly string $secret)
     {
     }
 
@@ -24,7 +24,7 @@ class IRCClientFactory
                 'rejoin' => true,
             ],
             'identity' => [
-                'username' => $this->nick,
+                'username' => $this->botNickname,
                 'password' => $this->secret,
             ],
             'channels' => $this->channels,

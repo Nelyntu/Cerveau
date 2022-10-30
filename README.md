@@ -31,7 +31,7 @@ Then run `composer install`.
 ### Configure
 
 Settings are in `.env` file :
-* `CERVEAU_STREAMER` : your streamer name
+* `CERVEAU_BOT_USERNAME` : your streamer name
 * `CERVEAU_TWITCH_OAUTH` : the oauth token (can be get from https://twitchapps.com/tmi/)
 * `CERVEAU_SUPER_USERS` : your privileged users who can use some special commands, can be an empty array
 * `CERVEAU_LOCALE` : bot's language (`fr` and `en` are available)

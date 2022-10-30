@@ -4,14 +4,13 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
-    cerveau.channels:
-        - '%env(CERVEAU_STREAMER)%'
+    cerveau.channels: '%env(json:CERVEAU_CHANNELS)%'
     cerveau.badWords:
         - 'Buy followers, primes and viewers'
         - 'bigfollows . com'
         - 'stearncomminuty'
     cerveau.superUsers: '%env(json:CERVEAU_SUPER_USERS)%'
-    cerveau.streamer.nickname: '%env(CERVEAU_STREAMER)%'
+    cerveau.bot.nickname: '%env(CERVEAU_BOT_USERNAME)%'
     cerveau.automessages.messages: '%env(json:CERVEAU_AUTOMESSAGES_MESSAGES)%'
     cerveau.twitch.clientId: '%env(CERVEAU_TWITCH_CLIENT_ID)%'
     cerveau.twitch.clientSecret: '%env(CERVEAU_TWITCH_CLIENT_SECRET)%'
@@ -22,7 +21,8 @@ services:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
         bind:
-            $streamer: '%cerveau.streamer.nickname%'
+            $botNickname: '%cerveau.bot.nickname%'
+            $channels: '%cerveau.channels%'
 
     _instanceof:
         \Cerveau\CommandHandler\CommandHandlerInterface:
@@ -75,17 +75,12 @@ services:
 
     Cerveau\Factory\IRCClientFactory:
         arguments:
-            $channels: '%cerveau.channels%'
-            $nick: '%cerveau.streamer.nickname%'
             $secret: "%env(CERVEAU_TWITCH_OAUTH)%"
 
     Cerveau\Bot:
         arguments:
             $options:
                 badwords: '%cerveau.badWords%'
-                channels: '%cerveau.channels%'
-                nick: '%cerveau.streamer.nickname%'
-                secret: "%env(CERVEAU_TWITCH_OAUTH)%"
 
     Cerveau\Factory\TwitchApiFactory:
         arguments:

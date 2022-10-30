@@ -4,7 +4,7 @@ namespace App\Command;
 
 use Cerveau\AutoMessage;
 use Cerveau\Bot;
-use Cerveau\Statistics\Statistics;
+use Cerveau\Factory\StatisticsFactory;
 use GhostZero\Tmi\Client;
 use GhostZero\Tmi\Events\Irc\WelcomeEvent;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -17,13 +17,16 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[AsCommand(name: 'cerveau:bot:run')]
 class BotRunCommand extends Command
 {
+    /**
+     * @param string[] $channels
+     */
     public function __construct(
         private readonly Bot                 $bot,
         private readonly Client              $client,
-        private readonly string              $streamer,
         private readonly TranslatorInterface $translator,
         private readonly AutoMessage         $autoMessage,
-        private readonly Statistics          $statistics
+        private readonly StatisticsFactory   $statisticsFactory,
+        private readonly array               $channels,
     )
     {
         parent::__construct(self::$defaultName);
@@ -33,20 +36,24 @@ class BotRunCommand extends Command
     {
         // on bot start
         $this->client->on(WelcomeEvent::class, function (WelcomeEvent $e): void {
-            $this->client->say($this->streamer, $this->translator->trans('bot.start', [], 'bot'));
+            foreach($this->channels as $channel) {
+                $this->client->say($channel, $this->translator->trans('bot.start', [], 'bot'));
 
-            // start auto message
-            $this->autoMessage->start();
-            $this->statistics->init();
+                // start auto message
+                $this->autoMessage->start();
+                $this->statisticsFactory->createStatistics()->init($channel);
+            }
         });
 
         // on bot end (CTRL+C)
         $loop = $this->client->getLoop();
         $loop->addSignal(SIGINT, function (int $signal) use ($loop) {
-            $this->client->say($this->streamer, $this->translator->trans('bot.end', [], 'bot'));
-            $loop->futureTick(function () use ($loop): void {
-                $loop->stop();
-            });
+            foreach($this->channels as $channel) {
+                $this->client->say($channel, $this->translator->trans('bot.end', [], 'bot'));
+                $loop->futureTick(function () use ($loop): void {
+                    $loop->stop();
+                });
+            }
         });
 
         // start

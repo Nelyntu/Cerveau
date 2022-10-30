@@ -12,7 +12,7 @@ class AutoMessage
     /**
      * @param int $interval in minutes
      */
-    public function __construct(private readonly string $streamer, private readonly Client $client, private readonly int $interval)
+    public function __construct(private readonly string $botNickname, private readonly Client $client, private readonly int $interval)
     {
     }
 
@@ -40,7 +40,7 @@ class AutoMessage
             return;
         }
 
-        $this->client->say($this->streamer, $message);
+        $this->client->say($this->botNickname, $message);
         $nextValue = next($this->messages);
         if ($nextValue === false) {
             reset($this->messages);

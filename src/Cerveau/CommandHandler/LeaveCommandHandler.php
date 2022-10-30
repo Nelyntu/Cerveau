@@ -32,7 +32,7 @@ class LeaveCommandHandler implements CommandHandlerInterface
 
     public function isAuthorized(string $username): bool
     {
-        return $username === $this->userList->streamer;
+        return $username === $this->userList->botNickname;
     }
 
     public function getName(): array
