@@ -15,6 +15,7 @@ class EventTracker
 {
     /** @var string[] */
     private array $chatters;
+    private ?string $debugOnChannel = null;
 
     public function __construct(
         private readonly Channel             $channel,
@@ -22,6 +23,11 @@ class EventTracker
         private readonly ChatEventRepository $chatEventRepository
     )
     {
+    }
+
+    public function setDebugOnChannel(?string $channel): void
+    {
+        $this->debugOnChannel = $channel;
     }
 
     public function startTracking(string $channel): void
@@ -38,9 +44,9 @@ class EventTracker
             $this->chatEventRepository->add($chatEvent);
         }
 
-//        $this->tmiClient->say(
-//            $this->streamer, 'Le bot dit bonjour à : ' . implode(', ', $this->chatters)
-//        );
+        if ($this->debugOnChannel) {
+            $this->tmiClient->say($channel, '[DEBUG] First detect chatters: ' . implode(', ', $this->chatters));
+        }
 
         $this->tmiClient->on(JoinEvent::class, function (JoinEvent $event) use ($channel) {
             if (Channel::sanitize($event->channel->getName()) !== $channel) {
@@ -61,7 +67,9 @@ class EventTracker
                 return;
             }
 
-//            $this->tmiClient->say($this->streamer, 'Hello ' . $username . ' !');
+            if ($this->debugOnChannel) {
+                $this->tmiClient->say($channel, '[DEBUG] New chatter detected: ' . $username);
+            }
 
             $this->chatters[] = $username;
         });
@@ -79,7 +87,9 @@ class EventTracker
 
             $this->chatEventRepository->add($chatEvent);
 
-//            $this->tmiClient->say($event->channel, 'Bye ' . $event->user . '!');
+            if ($this->debugOnChannel) {
+                $this->tmiClient->say($channel, '[DEBUG] Chatter leaved: ' . $event->user);
+            }
 
             unset($this->chatters[$userKey]);
         });
@@ -103,7 +113,9 @@ class EventTracker
                 return;
             }
 
-//            $this->tmiClient->say($this->streamer, 'Hello ' . $username . ' !');
+            if ($this->debugOnChannel) {
+                $this->tmiClient->say($channel, '[DEBUG] New chatter detected: ' . $username);
+            }
 
             $this->chatters[] = $username;
         });

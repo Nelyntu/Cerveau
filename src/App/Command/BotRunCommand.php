@@ -41,7 +41,9 @@ class BotRunCommand extends Command
 
                 // start auto message
                 $this->autoMessage->start();
-                $this->statisticsFactory->create()->startTracking($channel);
+                $eventTracker = $this->statisticsFactory->create();
+                // $eventTracker->setDebugOnChannel($channel);
+                $eventTracker->startTracking($channel);
             }
         });
 
