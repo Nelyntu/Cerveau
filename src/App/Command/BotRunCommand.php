@@ -48,15 +48,17 @@ class BotRunCommand extends Command
         });
 
         // on bot end (CTRL+C)
-        $loop = $this->client->getLoop();
-        $loop->addSignal(SIGINT, function (int $signal) use ($loop) {
-            foreach($this->channels as $channel) {
-                $this->client->say($channel, $this->translator->trans('bot.end', [], 'bot'));
-                $loop->futureTick(function () use ($loop): void {
-                    $loop->stop();
-                });
-            }
-        });
+        if (defined('SIGINT')) {
+            $loop = $this->client->getLoop();
+            $loop->addSignal(SIGINT, function (int $signal) use ($loop) {
+                foreach ($this->channels as $channel) {
+                    $this->client->say($channel, $this->translator->trans('bot.end', [], 'bot'));
+                    $loop->futureTick(function () use ($loop): void {
+                        $loop->stop();
+                    });
+                }
+            });
+        }
 
         // start
         $this->bot->run();

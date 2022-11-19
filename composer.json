@@ -11,7 +11,6 @@
     "ext-ctype": "*",
     "ext-iconv": "*",
     "ext-mbstring": "*",
-    "ext-pcntl": "*",
     "doctrine/doctrine-bundle": "^2.7",
     "doctrine/doctrine-migrations-bundle": "^3.2",
     "doctrine/orm": "^2.13",
@@ -29,6 +28,9 @@
     "symfony/translation": "6.1.*",
     "symfony/yaml": "6.1.*",
     "threshold/mb-substr-replace": "^1.0"
+  },
+  "suggested": {
+    "ext-pcntl": "Handle bot run end (uncompatible with Windows)"
   },
   "autoload": {
     "psr-4": { "": "src/" }
