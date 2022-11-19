@@ -1,4 +1,4 @@
-Cerveau : Twitch Chat bot
+Cerveau: Twitch Chat bot
 =========================
 
 A chat self-bot built with [tmi](https://github.com/ghostzero/tmi) for the official [Twitch TV](https://www.twitch.tv) Internet Relay Chat (IRC) interface.
@@ -20,7 +20,7 @@ It's partially developed during live streams [on Twitch](https://www.twitch.tv/n
 
 ### Install
 
-Cerveau is installed cloning the project :
+Cerveau is installed cloning the project:
 
 ```
 git clone https://github.com/Nelyntu/Cerveau.git
@@ -30,11 +30,11 @@ Then run `composer install`.
 
 ### Configure
 
-Settings are in `.env` file :
-* `CERVEAU_BOT_USERNAME` : your streamer name
-* `CERVEAU_TWITCH_OAUTH` : the oauth token (can be get from https://twitchapps.com/tmi/)
-* `CERVEAU_SUPER_USERS` : your privileged users who can use some special commands, can be an empty array
-* `CERVEAU_LOCALE` : bot's language (`fr` and `en` are available)
+Settings are in `.env` file:
+* `CERVEAU_BOT_USERNAME`: your streamer name
+* `CERVEAU_TWITCH_OAUTH`: the oauth token (can be get from https://twitchapps.com/tmi/)
+* `CERVEAU_SUPER_USERS`: your privileged users who can use some special commands, can be an empty array
+* `CERVEAU_LOCALE`: bot's language (`fr` and `en` are available)
 
 ## Customization
 
@@ -48,7 +48,7 @@ As alternative, you can extend `\ Cerveau\CommandHandler\CoolDownableCommandHand
 
 It has a `checkUserCoolDown` method to easily handle users cooldown.
 
-When needed, add this snippet to check cooldown and answer to your users :
+When needed, add this snippet to check cooldown and answer to your users:
 ```php
         $coolDownCheck = $this->checkUserCoolDown($command);
         if (is_string($coolDownCheck)) {
@@ -56,21 +56,20 @@ When needed, add this snippet to check cooldown and answer to your users :
         }
 ```
 
-NB : `$coolDownCheck` is the cooldown message (see `commands.triggered_cooldown` [translations](translations))
+NB: `$coolDownCheck` is the cooldown message (see `commands.triggered_cooldown` [translations](translations))
 
 ## Contribution
 
-Run once :
+Run once:
 
 ```
 composer install --dev
 ```
 
-Commands to run for code quality :
+Command to run for code quality checks:
 
 ```
-vendor/bin/rector process src
-vendor/bin/phpstan analyse src --level 9
+make quality
 ```
 
 ## Original project
