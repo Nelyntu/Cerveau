@@ -74,7 +74,7 @@ class Twitch
         $accessTokenItemCacheKey = 'cerveau:twitch:accesstoken:' . $twitchScopes;
         $accessTokenItemCache = $this->cache->getItem($accessTokenItemCacheKey);
         if ($accessTokenItemCache->isHit()) {
-            /** @var $token string */
+            /** @var string $token */
             $token = $accessTokenItemCache->get();
             return $token;
         }

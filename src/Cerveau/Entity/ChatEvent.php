@@ -28,4 +28,14 @@ class ChatEvent
     {
         return $this->type;
     }
+
+    public function getUsername(): string
+    {
+        return $this->username;
+    }
+
+    public function getCreatedAt(): \DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
 }

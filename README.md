@@ -69,8 +69,8 @@ composer install --dev
 Commands to run for code quality :
 
 ```
-vendor/bin/phpstan analyse src --level 9
 vendor/bin/rector process src
+vendor/bin/phpstan analyse src --level 9
 ```
 
 ## Original project
