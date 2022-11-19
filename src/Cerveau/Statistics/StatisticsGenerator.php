@@ -43,6 +43,7 @@ class StatisticsGenerator
      */
     private function guessLives(array $chatEvents): array
     {
+        /** @var BotSession[] $sessions */
         $sessions = [];
         $session = null;
         $prevEventDate = null;
@@ -50,16 +51,12 @@ class StatisticsGenerator
             if ($session === null) {
                 $session = new BotSession($chatEvent->getCreatedAt());
                 $sessions[] = $session;
-            } else {
+            } elseif ($chatEvent->getType() === 'start') {
                 /** @phpstan-ignore-next-line */
-                $intervalInSeconds = $chatEvent->getCreatedAt()->getTimestamp() - $prevEventDate->getTimestamp();
-                if ($intervalInSeconds > 60 * 15) {
-                    /** @phpstan-ignore-next-line */
-                    $session->setEnd($prevEventDate);
-                    $session->addChatEvent($chatEvent);
-                    $session = null;
-                    continue;
-                }
+                $session->setEnd($prevEventDate);
+                $session->addChatEvent($chatEvent);
+                $session = null;
+                continue;
             }
             $prevEventDate = $chatEvent->getCreatedAt();
             $session->addChatEvent($chatEvent);
@@ -70,6 +67,64 @@ class StatisticsGenerator
             $session->setEnd($prevEventDate);
         }
 
+        foreach ($sessions as $session) {
+            $session->setWatchTimes($this->calculateBotSessionWatchTime($session));
+        }
+
         return $sessions;
+    }
+
+    /**
+     * @return array<string, float>
+     */
+    private function calculateBotSessionWatchTime(BotSession $session): array
+    {
+        $chatters = array_map(fn(ChatEvent $chatEvent) => $chatEvent->getUsername(), $session->chatEvents);
+        $chatters = array_unique($chatters);
+
+        $watchTimes = [];
+        foreach($chatters as $chatter) {
+            $watchTimes[$chatter] = $this->calculateChatterWatchTime($session, $chatter);
+        }
+
+        return $watchTimes;
+    }
+
+    private function calculateChatterWatchTime(BotSession $session, string $userName): float
+    {
+        $chatEvents = array_filter($session->chatEvents, fn(ChatEvent $chatEvent) => $chatEvent->getUsername() === $userName);
+
+        /** @var ?ChatEvent $startChatEventPresence */
+        $startChatEventPresence = null;
+        $presences = [];
+        foreach ($chatEvents as $chatEvent) {
+            switch ($chatEvent->getType()) {
+                case 'part':
+                    if ($startChatEventPresence !== null) {
+                        $presences[] = $chatEvent->getCreatedAt()->getTimestamp() - $startChatEventPresence->getCreatedAt()->getTimestamp();
+                        $startChatEventPresence = null;
+                    }
+                    break;
+                case 'init':
+                case 'message':
+                case 'join':
+                    if ($startChatEventPresence === null) {
+                        $startChatEventPresence = $chatEvent;
+                    }
+                    break;
+            }
+        }
+
+        if ($startChatEventPresence !== null) {
+            /** @phpstan-ignore-next-line */
+            $presences[] = $session->end->getTimestamp() - $startChatEventPresence->getCreatedAt()->getTimestamp();
+        }
+
+        $totalPresence = 0;
+        foreach ($presences as $time) {
+            $totalPresence += $time;
+        }
+
+        return $totalPresence / 60;
     }
 }
