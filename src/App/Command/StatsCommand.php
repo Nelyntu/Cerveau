@@ -5,6 +5,10 @@ namespace App\Command;
 use Cerveau\Statistics\StatisticsGenerator;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Helper\Table;
+use Symfony\Component\Console\Helper\TableCell;
+use Symfony\Component\Console\Helper\TableCellStyle;
+use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -32,13 +36,20 @@ class StatsCommand extends Command
 
         $statistics = $this->statisticsGenerator->generate($channel, $start, $end);
 
-        $output->writeln('#chatters: ' . $statistics->chattersCount);
-        $output->writeln('#followers: ' . $statistics->followersCount);
-
+        $rows = [];
         foreach ($statistics->sessions as $session) {
             /** @phpstan-ignore-next-line */
-            $output->writeln($session->start->format('Y-m-d H:i:s') . ' -> ' . $session->end->format('Y-m-d H:i:s'));
+            $rows[] = [$session->start->format('Y-m-d H:i:s'), $session->end->format('Y-m-d H:i:s'), count($session->chatters),];
         }
+
+        $rows[] = new TableSeparator();
+        $rows[] = [new TableCell('#followers: ' . $statistics->followersCount, ['colspan' => 2, 'style' => new TableCellStyle(['align' => 'center'])]), $statistics->chattersCount];
+
+        $table = new Table($output);
+        $table
+            ->setHeaders(['Start', 'End', '#chatters'])
+            ->setRows($rows);
+        $table->render();
 
         return 0;
     }

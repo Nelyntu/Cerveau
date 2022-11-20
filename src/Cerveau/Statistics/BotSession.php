@@ -11,6 +11,10 @@ class BotSession
     public ?\DateTimeImmutable $end = null;
     /** @var array<string, float> */
     public array $watchTimes;
+    /**
+     * @var string[]
+     */
+    public array $chatters;
 
     public function __construct(public readonly \DateTimeImmutable $start)
     {
@@ -32,5 +36,13 @@ class BotSession
     public function setWatchTimes(array $watchTimes): void
     {
         $this->watchTimes = $watchTimes;
+    }
+
+    /**
+     * @param string[] $chatters
+     */
+    public function setChatters(array $chatters): void
+    {
+        $this->chatters = $chatters;
     }
 }

@@ -68,6 +68,11 @@ class StatisticsGenerator
         }
 
         foreach ($sessions as $session) {
+            $chatters = array_map(fn(ChatEvent $chatEvent) => $chatEvent->getUsername(), $session->chatEvents);
+            $session->setChatters(array_unique($chatters));
+        }
+
+        foreach ($sessions as $session) {
             $session->setWatchTimes($this->calculateBotSessionWatchTime($session));
         }
 
@@ -79,11 +84,8 @@ class StatisticsGenerator
      */
     private function calculateBotSessionWatchTime(BotSession $session): array
     {
-        $chatters = array_map(fn(ChatEvent $chatEvent) => $chatEvent->getUsername(), $session->chatEvents);
-        $chatters = array_unique($chatters);
-
         $watchTimes = [];
-        foreach($chatters as $chatter) {
+        foreach($session->chatters as $chatter) {
             $watchTimes[$chatter] = $this->calculateChatterWatchTime($session, $chatter);
         }
 
