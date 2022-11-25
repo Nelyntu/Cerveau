@@ -42,7 +42,11 @@ class StatsCommand extends Command
         }
 
         $rows[] = new TableSeparator();
-        $rows[] = [new TableCell('#followers: ' . $statistics->followersCount, ['colspan' => 2, 'style' => new TableCellStyle(['align' => 'center'])]), $statistics->chattersCount];
+        $rows[] = [
+            new TableCell('#followers: ' . $statistics->followersCount, ['colspan' => 2, 'style' => new TableCellStyle(['align' => 'center'])]),
+            $statistics->chattersCount,
+            round($statistics->avgView, 1),
+        ];
 
         $table = new Table($output);
         $table

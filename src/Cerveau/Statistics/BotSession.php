@@ -13,6 +13,8 @@ class BotSession
      */
     public array $chatters;
     public float $avgView;
+    public float $durationInMinutes;
+    public float $totalWatchTime;
 
     /**
      * @param ChatEvent[] $chatEvents
@@ -24,6 +26,7 @@ class BotSession
     {
         $chatters = array_map(fn(ChatEvent $chatEvent) => $chatEvent->getUsername(), $this->chatEvents);
         $this->chatters = array_unique($chatters);
+        $this->durationInMinutes = ($end->getTimestamp() - $start->getTimestamp()) / 60.0;
     }
 
     /**
@@ -33,10 +36,8 @@ class BotSession
     {
         $this->watchTimes = $watchTimes;
 
-        $totalWatchTime = array_reduce($watchTimes, fn($carry, float $timeWatch) => $carry + $timeWatch, 0.0);
+        $this->totalWatchTime = array_reduce($watchTimes, fn($carry, float $timeWatch) => $carry + $timeWatch, 0.0);
 
-        $durationInMinutes = ($this->end->getTimestamp() - $this->start->getTimestamp()) / 60;
-
-        $this->avgView = $totalWatchTime / $durationInMinutes;
+        $this->avgView = $this->totalWatchTime / $this->durationInMinutes;
     }
 }

@@ -9,7 +9,7 @@ class Statistics
      */
     public function __construct(public readonly int   $chattersCount,
                                 public readonly int   $followersCount,
-                                public readonly float $avgWatchTime,
+                                public readonly float $avgView,
                                 public readonly array $sessions)
     {
     }

@@ -10,8 +10,8 @@ use Cerveau\Twitch\Twitch;
 class StatisticsGenerator
 {
     public function __construct(private readonly ChatEventRepository $chatEventRepository,
-                                private readonly Twitch $twitch,
-                                private readonly BotSessionBuilder $botSessionBuilder,
+                                private readonly Twitch              $twitch,
+                                private readonly BotSessionBuilder   $botSessionBuilder,
     )
     {
     }
@@ -37,7 +37,9 @@ class StatisticsGenerator
 
         $sessions = $this->guessLives($chatEvents);
 
-        return new Statistics($chattersCount, $presentFollowers, 0.0, $sessions);
+        $avgChatters = $this->calculateAvgChatters($sessions);
+
+        return new Statistics($chattersCount, $presentFollowers, $avgChatters, $sessions);
     }
 
     /**
@@ -69,5 +71,16 @@ class StatisticsGenerator
         }
 
         return $sessions;
+    }
+
+    /**
+     * @param BotSession[] $sessions
+     */
+    private function calculateAvgChatters(array $sessions): float
+    {
+        $totalDurationInMinutes = array_reduce($sessions, fn(float $carry, BotSession $botSession) => $carry + $botSession->durationInMinutes, 0.0);
+        $totalWatchTime = array_reduce($sessions, fn(float $carry, BotSession $botSession) => $carry + $botSession->totalWatchTime, 0.0);
+
+        return $totalWatchTime / $totalDurationInMinutes;
     }
 }
