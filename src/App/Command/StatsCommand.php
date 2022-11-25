@@ -38,7 +38,6 @@ class StatsCommand extends Command
 
         $rows = [];
         foreach ($statistics->sessions as $session) {
-            /** @phpstan-ignore-next-line */
             $rows[] = [$session->start->format('Y-m-d H:i:s'), $session->end->format('H:i:s'), count($session->chatters), round($session->avgView, 1),];
         }
 

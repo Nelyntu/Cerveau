@@ -9,7 +9,10 @@ use Cerveau\Twitch\Twitch;
 
 class StatisticsGenerator
 {
-    public function __construct(private readonly ChatEventRepository $chatEventRepository, private readonly Twitch $twitch)
+    public function __construct(private readonly ChatEventRepository $chatEventRepository,
+                                private readonly Twitch $twitch,
+                                private readonly BotSessionBuilder $botSessionBuilder,
+    )
     {
     }
 
@@ -43,90 +46,28 @@ class StatisticsGenerator
      */
     private function guessLives(array $chatEvents): array
     {
-        /** @var BotSession[] $sessions */
-        $sessions = [];
-        $session = null;
-        $prevEventDate = null;
+        $chatEventsChunks = [];
+        $currentChatEventsChunk = [];
         foreach ($chatEvents as $chatEvent) {
-            if ($session === null) {
-                $session = new BotSession($chatEvent->getCreatedAt());
-                $sessions[] = $session;
-            } elseif ($chatEvent->getType() === 'start') {
-                /** @phpstan-ignore-next-line */
-                $session->setEnd($prevEventDate);
-                $session->addChatEvent($chatEvent);
-                $session = null;
+            if (!empty($currentChatEventsChunk) && $chatEvent->getType() === 'start') {
+                $chatEventsChunks[] = $currentChatEventsChunk;
+                $currentChatEventsChunk = [];
                 continue;
             }
-            $prevEventDate = $chatEvent->getCreatedAt();
-            $session->addChatEvent($chatEvent);
+
+            $currentChatEventsChunk[] = $chatEvent;
         }
 
-        if ($prevEventDate !== null) {
-            /** @phpstan-ignore-next-line */
-            $session->setEnd($prevEventDate);
+        if (!empty($currentChatEventsChunk)) {
+            $chatEventsChunks[] = $currentChatEventsChunk;
         }
 
-        foreach ($sessions as $session) {
-            $chatters = array_map(fn(ChatEvent $chatEvent) => $chatEvent->getUsername(), $session->chatEvents);
-            $session->setChatters(array_unique($chatters));
-        }
-
-        foreach ($sessions as $session) {
-            $session->setWatchTimes($this->calculateBotSessionWatchTime($session));
+        /** @var BotSession[] $sessions */
+        $sessions = [];
+        foreach ($chatEventsChunks as $chatEvents) {
+            $sessions[] = $this->botSessionBuilder->fromChatEvents($chatEvents);
         }
 
         return $sessions;
-    }
-
-    /**
-     * @return array<string, float>
-     */
-    private function calculateBotSessionWatchTime(BotSession $session): array
-    {
-        $watchTimes = [];
-        foreach($session->chatters as $chatter) {
-            $watchTimes[$chatter] = $this->calculateChatterWatchTime($session, $chatter);
-        }
-
-        return $watchTimes;
-    }
-
-    private function calculateChatterWatchTime(BotSession $session, string $userName): float
-    {
-        $chatEvents = array_filter($session->chatEvents, fn(ChatEvent $chatEvent) => $chatEvent->getUsername() === $userName);
-
-        /** @var ?ChatEvent $startChatEventPresence */
-        $startChatEventPresence = null;
-        $presences = [];
-        foreach ($chatEvents as $chatEvent) {
-            switch ($chatEvent->getType()) {
-                case 'part':
-                    if ($startChatEventPresence !== null) {
-                        $presences[] = $chatEvent->getCreatedAt()->getTimestamp() - $startChatEventPresence->getCreatedAt()->getTimestamp();
-                        $startChatEventPresence = null;
-                    }
-                    break;
-                case 'init':
-                case 'message':
-                case 'join':
-                    if ($startChatEventPresence === null) {
-                        $startChatEventPresence = $chatEvent;
-                    }
-                    break;
-            }
-        }
-
-        if ($startChatEventPresence !== null) {
-            /** @phpstan-ignore-next-line */
-            $presences[] = $session->end->getTimestamp() - $startChatEventPresence->getCreatedAt()->getTimestamp();
-        }
-
-        $totalPresence = 0;
-        foreach ($presences as $time) {
-            $totalPresence += $time;
-        }
-
-        return $totalPresence / 60;
     }
 }

@@ -6,9 +6,6 @@ use Cerveau\Entity\ChatEvent;
 
 class BotSession
 {
-    /** @var ChatEvent[] */
-    public array $chatEvents;
-    public ?\DateTimeImmutable $end = null;
     /** @var array<string, float> */
     public array $watchTimes;
     /**
@@ -17,18 +14,16 @@ class BotSession
     public array $chatters;
     public float $avgView;
 
-    public function __construct(public readonly \DateTimeImmutable $start)
+    /**
+     * @param ChatEvent[] $chatEvents
+     */
+    public function __construct(public readonly \DateTimeImmutable $start,
+                                public readonly \DateTimeImmutable $end,
+                                public readonly array              $chatEvents,
+    )
     {
-    }
-
-    public function setEnd(\DateTimeImmutable $end): void
-    {
-        $this->end = $end;
-    }
-
-    public function addChatEvent(ChatEvent $chatEvent): void
-    {
-        $this->chatEvents[] = $chatEvent;
+        $chatters = array_map(fn(ChatEvent $chatEvent) => $chatEvent->getUsername(), $this->chatEvents);
+        $this->chatters = array_unique($chatters);
     }
 
     /**
@@ -38,19 +33,10 @@ class BotSession
     {
         $this->watchTimes = $watchTimes;
 
-        $totalWatchTime = array_reduce($watchTimes,fn($carry, float $timeWatch) => $carry + $timeWatch, 0.0);
+        $totalWatchTime = array_reduce($watchTimes, fn($carry, float $timeWatch) => $carry + $timeWatch, 0.0);
 
-        /** @phpstan-ignore-next-line */
         $durationInMinutes = ($this->end->getTimestamp() - $this->start->getTimestamp()) / 60;
 
         $this->avgView = $totalWatchTime / $durationInMinutes;
-    }
-
-    /**
-     * @param string[] $chatters
-     */
-    public function setChatters(array $chatters): void
-    {
-        $this->chatters = $chatters;
     }
 }
