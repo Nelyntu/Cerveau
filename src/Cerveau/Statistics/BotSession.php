@@ -15,6 +15,7 @@ class BotSession
      * @var string[]
      */
     public array $chatters;
+    public float $avgView;
 
     public function __construct(public readonly \DateTimeImmutable $start)
     {
@@ -36,6 +37,13 @@ class BotSession
     public function setWatchTimes(array $watchTimes): void
     {
         $this->watchTimes = $watchTimes;
+
+        $totalWatchTime = array_reduce($watchTimes,fn($carry, float $timeWatch) => $carry + $timeWatch, 0.0);
+
+        /** @phpstan-ignore-next-line */
+        $durationInMinutes = ($this->end->getTimestamp() - $this->start->getTimestamp()) / 60;
+
+        $this->avgView = $totalWatchTime / $durationInMinutes;
     }
 
     /**

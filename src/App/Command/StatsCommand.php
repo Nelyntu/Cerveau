@@ -39,7 +39,7 @@ class StatsCommand extends Command
         $rows = [];
         foreach ($statistics->sessions as $session) {
             /** @phpstan-ignore-next-line */
-            $rows[] = [$session->start->format('Y-m-d H:i:s'), $session->end->format('H:i:s'), count($session->chatters),];
+            $rows[] = [$session->start->format('Y-m-d H:i:s'), $session->end->format('H:i:s'), count($session->chatters), round($session->avgView, 1),];
         }
 
         $rows[] = new TableSeparator();
@@ -47,7 +47,7 @@ class StatsCommand extends Command
 
         $table = new Table($output);
         $table
-            ->setHeaders(['Start', 'End', '#chatters'])
+            ->setHeaders(['Start', 'End', '#chatters', 'avg'])
             ->setRows($rows);
         $table->render();
 
