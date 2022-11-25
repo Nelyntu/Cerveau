@@ -8,9 +8,14 @@ use GhostZero\Tmi\ClientOptions;
 class IRCClientFactory
 {
     /**
-     * @param string[]  $channels
+     * @param string[] $channels
+     * @param string[] $statsChannels
      */
-    public function __construct(private readonly string $botNickname, private readonly array $channels, private readonly string $secret)
+    public function __construct(private readonly string $botNickname,
+                                private readonly array  $channels,
+                                private readonly array  $statsChannels,
+                                private readonly string $secret,
+    )
     {
     }
 
@@ -27,7 +32,7 @@ class IRCClientFactory
                 'username' => $this->botNickname,
                 'password' => $this->secret,
             ],
-            'channels' => $this->channels,
+            'channels' => array_unique([...$this->statsChannels, ...$this->channels,]),
         ]));
     }
 }

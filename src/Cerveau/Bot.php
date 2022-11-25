@@ -2,6 +2,7 @@
 
 namespace Cerveau;
 
+use Cerveau\Statistics\Channel;
 use GhostZero\Tmi;
 use Psr\Log\LoggerInterface;
 
@@ -13,12 +14,14 @@ class Bot
 
     /**
      * @param mixed[] $options
+     * @param string[] $channels
      */
     public function __construct(
         private readonly Tmi\Client $ircClient,
         private readonly LoggerInterface $logger,
         array $options,
-        protected CommandDispatcher $commands
+        protected CommandDispatcher $commands,
+        private readonly array $channels,
     ) {
         if (PHP_SAPI !== 'cli') {
             trigger_error(
@@ -58,6 +61,9 @@ class Bot
     protected function connect(): void
     {
         $this->ircClient->on(Tmi\Events\Twitch\MessageEvent::class, function (Tmi\Events\Twitch\MessageEvent $e) {
+            if (!\in_array(Channel::sanitize($e->channel), $this->channels)) {
+                return;
+            }
             $message = new Message($e->channel, $e->user, $e->message);
 
             $this->process($message);

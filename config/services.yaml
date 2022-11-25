@@ -5,6 +5,7 @@
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
     cerveau.channels: '%env(json:CERVEAU_CHANNELS)%'
+    cerveau.stats.channels: '%env(json:CERVEAU_STATS_CHANNELS)%'
     cerveau.badWords:
         - 'Buy followers, primes and viewers'
         - 'bigfollows . com'
@@ -23,6 +24,7 @@ services:
         bind:
             $botNickname: '%cerveau.bot.nickname%'
             $channels: '%cerveau.channels%'
+            $statsChannels: '%cerveau.stats.channels%'
 
     _instanceof:
         \Cerveau\CommandHandler\CommandHandlerInterface:

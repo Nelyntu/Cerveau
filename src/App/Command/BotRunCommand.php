@@ -19,6 +19,7 @@ class BotRunCommand extends Command
 {
     /**
      * @param string[] $channels
+     * @param string[] $statsChannels
      */
     public function __construct(
         private readonly Bot                 $bot,
@@ -27,6 +28,7 @@ class BotRunCommand extends Command
         private readonly AutoMessage         $autoMessage,
         private readonly EventTrackerFactory $statisticsFactory,
         private readonly array               $channels,
+        private readonly array               $statsChannels,
     )
     {
         parent::__construct(self::$defaultName);
@@ -36,14 +38,17 @@ class BotRunCommand extends Command
     {
         // on bot start
         $this->client->on(WelcomeEvent::class, function (WelcomeEvent $e): void {
-            foreach($this->channels as $channel) {
+            foreach ($this->channels as $channel) {
                 $this->client->say($channel, $this->translator->trans('bot.start', [], 'bot'));
+            }
 
-                // start auto message
-                $this->autoMessage->start();
+            // start auto message
+            $this->autoMessage->start();
+
+            foreach ($this->statsChannels as $statsChannel) {
                 $eventTracker = $this->statisticsFactory->create();
                 // $eventTracker->setDebugOnChannel($channel);
-                $eventTracker->startTracking($channel);
+                $eventTracker->startTracking($statsChannel);
             }
         });
 
