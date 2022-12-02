@@ -2,6 +2,7 @@
 
 namespace App\Command;
 
+use Cerveau\Repository\UserRepository;
 use Cerveau\Statistics\Channel;
 use Cerveau\Twitch\Follower;
 use Cerveau\Twitch\Twitch;
@@ -18,7 +19,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 #[AsCommand(name: 'cerveau:chatters:list')]
 class ListRealChattersCommand extends Command
 {
-    public function __construct(private readonly Channel $channelStat, private readonly Twitch $twitch)
+    public function __construct(
+        private readonly Channel        $channelStat,
+        private readonly Twitch         $twitch,
+        private readonly UserRepository $userRepository,
+    )
     {
         parent::__construct(self::$defaultName);
     }
@@ -58,8 +63,9 @@ class ListRealChattersCommand extends Command
         /** @var string $channel */
         $channel = $input->getArgument('channel');
 
+        $channelUser = $this->userRepository->getOrCreateByUsername($channel);
         $realChatters = $this->channelStat->getRealChatters($channel);
-        $followers = $this->twitch->getFollowers($this->twitch->getUserByName($channel));
+        $followers = $this->twitch->getFollowers($channelUser);
 
         $rows = $this->getRows($followers, $realChatters);
 

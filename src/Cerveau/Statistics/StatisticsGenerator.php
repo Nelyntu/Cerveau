@@ -4,21 +4,25 @@ namespace Cerveau\Statistics;
 
 use Cerveau\Entity\ChatEvent;
 use Cerveau\Repository\ChatEventRepository;
+use Cerveau\Repository\UserRepository;
 use Cerveau\Twitch\Follower;
 use Cerveau\Twitch\Twitch;
 
 class StatisticsGenerator
 {
-    public function __construct(private readonly ChatEventRepository $chatEventRepository,
-                                private readonly Twitch              $twitch,
-                                private readonly BotSessionBuilder   $botSessionBuilder,
+    public function __construct(
+        private readonly ChatEventRepository $chatEventRepository,
+        private readonly Twitch              $twitch,
+        private readonly BotSessionBuilder   $botSessionBuilder,
+        private readonly UserRepository      $userRepository,
     )
     {
     }
 
     public function generate(string $channel, \DateTimeImmutable $start, \DateTimeImmutable $end): Statistics
     {
-        $followers = $this->twitch->getFollowers($this->twitch->getUserByName($channel));
+        $channelUser = $this->userRepository->getOrCreateByUsername($channel);
+        $followers = $this->twitch->getFollowers($channelUser);
         $followerUsernames = array_map(fn(Follower $follower) => $follower->login, $followers);
 
         $chatEvents = $this->chatEventRepository->getBetweenDates($channel, $start, $end);

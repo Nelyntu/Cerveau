@@ -7,33 +7,18 @@ use TwitchApi\TwitchApi;
 
 class Twitch
 {
-    public function __construct(protected readonly TwitchApi $twitchApi, protected readonly FilesystemAdapter $cache)
+    public function __construct(
+        protected readonly TwitchApi         $twitchApi,
+        protected readonly FilesystemAdapter $cache,
+        protected readonly FollowerBuilder   $followerBuilder,
+    )
     {
-    }
-
-    public function getUserByName(string $name): User
-    {
-        $accessToken = $this->getAccessToken('');
-        $response = $this->twitchApi->getUsersApi()->getUserByUsername($accessToken, $name);
-
-        /** @var array{data: array<array{id: int, login: string, display_name: string, display_name: string, created_at: string}>} $decodedResponse */
-        $decodedResponse = json_decode((string)$response->getBody(), true, 512, JSON_THROW_ON_ERROR);
-
-        if (empty($decodedResponse['data'])) {
-            throw new \DomainException('Username "' . $name . '" not found');
-        }
-
-        $data = $decodedResponse['data'][0];
-
-        /** @var \DateTimeImmutable $since */
-        $since = \DateTimeImmutable::createFromFormat('Y-m-d\TH:i:sp', $data['created_at']);
-        return new User($data['id'], $data['login'], $data['display_name'], $data['display_name'], $since);
     }
 
     /**
      * @return array<Follower>
      */
-    public function getFollowers(User $user): array
+    public function getFollowers(\Cerveau\Entity\User $user): array
     {
         $accessToken = $this->getAccessToken('');
 
@@ -42,15 +27,15 @@ class Twitch
 
         do {
             $response = $this->twitchApi->getUsersApi()
-                ->getUsersFollows($accessToken, null, (string)$user->id, 100, $cursor);
+                ->getUsersFollows($accessToken, null, (string)$user->getId(), 100, $cursor);
             /** @var array{data: array<array{from_id: int, from_login: string, from_name: string}>, pagination: array{cursor?: string}} $decodedResponse */
             $decodedResponse = json_decode((string)$response->getBody(), true, 512, JSON_THROW_ON_ERROR);
 
             foreach ($decodedResponse['data'] as $relation) {
-                $followers[] = new Follower($relation['from_id'], $relation['from_login'], $relation['from_name']);
+                $followers[] = $this->followerBuilder->build($relation['from_id'], $relation['from_login'], $relation['from_name']);
             }
 
-            $cursor = $decodedResponse['pagination']['cursor'] ?? null;;
+            $cursor = $decodedResponse['pagination']['cursor'] ?? null;
             $goNextPage = $cursor !== null;
         } while ($goNextPage);
 

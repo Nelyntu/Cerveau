@@ -1,0 +1,16 @@
+Cerveau\Entity\User:
+  type: entity
+  table: twitch_user
+  id:
+    id:
+      type: integer
+      nullable: false
+  fields:
+    login:
+      type: string
+      nullable: false
+      unique: true
+    name:
+      type: string
+      nullable: false
+      unique: true
