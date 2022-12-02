@@ -29,16 +29,14 @@
     "symfony/yaml": "6.1.*",
     "threshold/mb-substr-replace": "^1.0"
   },
-  "suggested": {
-    "ext-pcntl": "Handle bot run end (uncompatible with Windows)"
-  },
   "autoload": {
     "psr-4": { "": "src/" }
   },
   "suggest": {
     "ext-uv": "For a faster, and more performant loop. PHP >=7 only. Preferred.",
     "ext-libev": "For a faster, and more performant loop",
-    "ext-event": "For a faster, and more performant loop"
+    "ext-event": "For a faster, and more performant loop",
+    "ext-pcntl": "Handle bot run end (uncompatible with Windows)"
   },
   "minimum-stability": "stable",
   "prefer-stable": true,
@@ -92,6 +90,7 @@
   "require-dev": {
     "phpstan/phpstan": "^1.8",
     "rector/rector": "^0.13.10",
-    "roave/security-advisories": "dev-latest"
+    "roave/security-advisories": "dev-latest",
+    "ext-intl": "*"
   }
 }
