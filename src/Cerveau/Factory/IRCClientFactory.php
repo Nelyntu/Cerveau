@@ -22,7 +22,6 @@ class IRCClientFactory
     public function createClient(): Client
     {
         return new Client(new ClientOptions([
-            'options' => ['debug' => true],
             'connection' => [
                 'secure' => true,
                 'reconnect' => true,
