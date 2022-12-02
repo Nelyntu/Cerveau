@@ -18,6 +18,11 @@ class Twitch
 
         /** @var array{data: array<array{id: int, login: string, display_name: string, display_name: string, created_at: string}>} $decodedResponse */
         $decodedResponse = json_decode((string)$response->getBody(), true, 512, JSON_THROW_ON_ERROR);
+
+        if (empty($decodedResponse['data'])) {
+            throw new \DomainException('Username "' . $name . '" not found');
+        }
+
         $data = $decodedResponse['data'][0];
 
         /** @var \DateTimeImmutable $since */
