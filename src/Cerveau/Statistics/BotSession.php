@@ -38,6 +38,6 @@ class BotSession
 
         $this->totalWatchTime = array_reduce($watchTimes, fn($carry, float $timeWatch) => $carry + $timeWatch, 0.0);
 
-        $this->avgView = $this->totalWatchTime / $this->durationInMinutes;
+        $this->avgView = $this->durationInMinutes === 0.0 ? 0.0 : $this->totalWatchTime / $this->durationInMinutes;
     }
 }
