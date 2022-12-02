@@ -13,6 +13,7 @@ use function in_array;
 
 class EventTracker
 {
+    // TODO : track chatters in a separated class like "LiveChannel"
     /** @var string[] */
     private array $chatters;
     private ?string $debugOnChannel = null;
