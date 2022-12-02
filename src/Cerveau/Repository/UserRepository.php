@@ -22,18 +22,42 @@ class UserRepository
      */
     public function getOrCreateByUsername(string $username): User
     {
+        // find locally by name
         $user = $this->getLocallyByLogin($username);
 
         if ($user !== null) {
             return $user;
         }
 
+        // find by api
         $apiUser = $this->userApi->getUserByName($username);
-        // TODO : don't create if id already known (case : user rename)
-        $user = new User($apiUser->id, $apiUser->login, $apiUser->name);
-        $this->entityManager->persist($user);
+
+        // is ID known ?
+        $user = $this->getById($apiUser->id);
+        if(!$user instanceof \Cerveau\Entity\User) {
+            // new user
+            $user = new User($apiUser->id, $apiUser->login, $apiUser->name);
+            $this->entityManager->persist($user);
+        } else {
+            // user changed his name
+            $user->update($apiUser->login, $apiUser->name);
+        }
+
         $this->entityManager->flush();
 
+        return $user;
+    }
+
+    private function getById(int $id): ?User
+    {
+        /** @var ?User $user */
+        $user = $this->entityManager->createQueryBuilder()
+            ->select('user')
+            ->from(User::class, 'user')
+            ->where('user.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getOneOrNullResult();
         return $user;
     }
 
