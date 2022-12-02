@@ -19,3 +19,6 @@ Cerveau\Entity\ChatEvent:
     type:
       type: string
       nullable: false
+  manyToOne:
+    user:
+      targetEntity: Cerveau\Entity\User

@@ -4,6 +4,7 @@ namespace Cerveau\Statistics;
 
 use Cerveau\Entity\ChatEvent;
 use Cerveau\Repository\ChatEventRepository;
+use Cerveau\Repository\UserRepository;
 use DateTimeImmutable;
 use GhostZero\Tmi;
 use GhostZero\Tmi\Events\Irc\JoinEvent;
@@ -21,7 +22,8 @@ class EventTracker
     public function __construct(
         private readonly Channel             $channel,
         private readonly Tmi\Client          $tmiClient,
-        private readonly ChatEventRepository $chatEventRepository
+        private readonly ChatEventRepository $chatEventRepository,
+        private readonly UserRepository      $userRepository,
     )
     {
     }
@@ -35,12 +37,13 @@ class EventTracker
     {
         $this->chatters = $this->channel->getRealChatters($channel);
 
-        $chatEvent = new ChatEvent($channel, $channel, new DateTimeImmutable(), 'start');
+        $chatEvent = new ChatEvent($channel, $channel, new DateTimeImmutable(), 'start', null);
 
         $this->chatEventRepository->add($chatEvent);
 
         foreach ($this->chatters as $chatter) {
-            $chatEvent = new ChatEvent($chatter, $channel, new DateTimeImmutable(), 'init');
+            $user = $this->userRepository->getOrCreateByUsername($chatter);
+            $chatEvent = new ChatEvent($chatter, $channel, new DateTimeImmutable(), 'init', $user);
 
             $this->chatEventRepository->add($chatEvent);
         }
@@ -60,7 +63,8 @@ class EventTracker
                 return;
             }
 
-            $chatEvent = new ChatEvent($event->user, $event->channel, new DateTimeImmutable(), 'join');
+            $user = $this->userRepository->getOrCreateByUsername($event->user);
+            $chatEvent = new ChatEvent($event->user, $event->channel, new DateTimeImmutable(), 'join', $user);
 
             $this->chatEventRepository->add($chatEvent);
 
@@ -80,7 +84,8 @@ class EventTracker
                 return;
             }
 
-            $chatEvent = new ChatEvent($event->user, $event->channel, new DateTimeImmutable(), 'part');
+            $user = $this->userRepository->getOrCreateByUsername($event->user);
+            $chatEvent = new ChatEvent($event->user, $event->channel, new DateTimeImmutable(), 'part', $user);
 
             $this->chatEventRepository->add($chatEvent);
 
@@ -107,7 +112,8 @@ class EventTracker
                 return;
             }
 
-            $chatEvent = new ChatEvent($event->user, $event->channel, new DateTimeImmutable(), 'message');
+            $user = $this->userRepository->getOrCreateByUsername($event->user);
+            $chatEvent = new ChatEvent($event->user, $event->channel, new DateTimeImmutable(), 'message', $user);
 
             $this->chatEventRepository->add($chatEvent);
 

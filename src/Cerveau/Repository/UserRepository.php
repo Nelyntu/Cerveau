@@ -29,6 +29,7 @@ class UserRepository
         }
 
         $apiUser = $this->userApi->getUserByName($username);
+        // TODO : don't create if id already known (case : user rename)
         $user = new User($apiUser->id, $apiUser->login, $apiUser->name);
         $this->entityManager->persist($user);
         $this->entityManager->flush();

@@ -14,6 +14,7 @@ class ChatEvent
         string                       $channel,
         protected \DateTimeImmutable $createdAt,
         protected string             $type,
+        protected ?User              $user,
     )
     {
         $this->channel = Channel::sanitize($channel);
