@@ -10,11 +10,10 @@ class ChatEvent
     protected string $channel;
 
     public function __construct(
-        protected string             $username,
         string                       $channel,
         protected \DateTimeImmutable $createdAt,
         protected string             $type,
-        protected ?User              $user,
+        protected User              $user,
     )
     {
         $this->channel = Channel::sanitize($channel);
@@ -30,13 +29,13 @@ class ChatEvent
         return $this->type;
     }
 
-    public function getUsername(): string
-    {
-        return $this->username;
-    }
-
     public function getCreatedAt(): \DateTimeImmutable
     {
         return $this->createdAt;
+    }
+
+    public function getUser(): User
+    {
+        return $this->user;
     }
 }

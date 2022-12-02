@@ -24,7 +24,7 @@ class BotSession
                                 public readonly array              $chatEvents,
     )
     {
-        $chatters = array_map(fn(ChatEvent $chatEvent) => $chatEvent->getUsername(), $this->chatEvents);
+        $chatters = array_map(fn(ChatEvent $chatEvent) => $chatEvent->getUser()->getLogin(), $this->chatEvents);
         $this->chatters = array_unique($chatters);
         $this->durationInMinutes = ($end->getTimestamp() - $start->getTimestamp()) / 60.0;
     }

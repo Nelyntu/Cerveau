@@ -7,9 +7,6 @@ Cerveau\Entity\ChatEvent:
       generator:
         strategy: AUTO
   fields:
-    username:
-      type: string
-      nullable: false
     channel:
       type: string
       nullable: false

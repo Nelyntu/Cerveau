@@ -29,4 +29,9 @@ class User
         $this->login = $login;
         $this->name = $name;
     }
+
+    public function getLogin(): string
+    {
+        return $this->login;
+    }
 }

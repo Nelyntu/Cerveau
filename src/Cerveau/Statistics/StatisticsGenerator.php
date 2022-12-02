@@ -3,6 +3,7 @@
 namespace Cerveau\Statistics;
 
 use Cerveau\Entity\ChatEvent;
+use Cerveau\Entity\User;
 use Cerveau\Repository\ChatEventRepository;
 use Cerveau\Repository\UserRepository;
 use Cerveau\Twitch\Follower;
@@ -27,16 +28,17 @@ class StatisticsGenerator
 
         $chatEvents = $this->chatEventRepository->getBetweenDates($channel, $start, $end);
 
+        /** @var User[] $chatters */
         $chatters = [];
 
         foreach ($chatEvents as $chatEvent) {
-            $chatters[$chatEvent->getUsername()] = $chatEvent->getUsername();
+            $chatters[$chatEvent->getUser()->getId()] = $chatEvent->getUser();
         }
 
         $chattersCount = count($chatters);
         $presentFollowers = array_reduce(
             $chatters,
-            fn(int $carry, string $username) => $carry + (in_array($username, $followerUsernames) ? 1 : 0),
+            fn(int $carry, User $user) => $carry + (in_array($user->getLogin(), $followerUsernames) ? 1 : 0),
             0);
 
         $sessions = $this->guessLives($chatEvents);

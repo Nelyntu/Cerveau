@@ -39,7 +39,7 @@ class BotSessionBuilder
 
     private function calculateChatterWatchTime(BotSession $session, string $userName): float
     {
-        $chatEvents = array_filter($session->chatEvents, fn(ChatEvent $chatEvent) => $chatEvent->getUsername() === $userName);
+        $chatEvents = array_filter($session->chatEvents, fn(ChatEvent $chatEvent) => $chatEvent->getUser()->getLogin() === $userName);
 
         /** @var ?ChatEvent $startChatEventPresence */
         $startChatEventPresence = null;

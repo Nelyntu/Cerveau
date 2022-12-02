@@ -37,13 +37,14 @@ class EventTracker
     {
         $this->chatters = $this->channel->getRealChatters($channel);
 
-        $chatEvent = new ChatEvent($channel, $channel, new DateTimeImmutable(), 'start', null);
+        $user = $this->userRepository->getOrCreateByUsername($channel);
+        $chatEvent = new ChatEvent($channel, new DateTimeImmutable(), 'start', $user);
 
         $this->chatEventRepository->add($chatEvent);
 
         foreach ($this->chatters as $chatter) {
             $user = $this->userRepository->getOrCreateByUsername($chatter);
-            $chatEvent = new ChatEvent($chatter, $channel, new DateTimeImmutable(), 'init', $user);
+            $chatEvent = new ChatEvent($channel, new DateTimeImmutable(), 'init', $user);
 
             $this->chatEventRepository->add($chatEvent);
         }
@@ -64,7 +65,7 @@ class EventTracker
             }
 
             $user = $this->userRepository->getOrCreateByUsername($event->user);
-            $chatEvent = new ChatEvent($event->user, $event->channel, new DateTimeImmutable(), 'join', $user);
+            $chatEvent = new ChatEvent($event->channel, new DateTimeImmutable(), 'join', $user);
 
             $this->chatEventRepository->add($chatEvent);
 
@@ -85,7 +86,7 @@ class EventTracker
             }
 
             $user = $this->userRepository->getOrCreateByUsername($event->user);
-            $chatEvent = new ChatEvent($event->user, $event->channel, new DateTimeImmutable(), 'part', $user);
+            $chatEvent = new ChatEvent($event->channel, new DateTimeImmutable(), 'part', $user);
 
             $this->chatEventRepository->add($chatEvent);
 
@@ -113,7 +114,7 @@ class EventTracker
             }
 
             $user = $this->userRepository->getOrCreateByUsername($event->user);
-            $chatEvent = new ChatEvent($event->user, $event->channel, new DateTimeImmutable(), 'message', $user);
+            $chatEvent = new ChatEvent($event->channel, new DateTimeImmutable(), 'message', $user);
 
             $this->chatEventRepository->add($chatEvent);
 
