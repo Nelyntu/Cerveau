@@ -78,14 +78,15 @@ class EventTracker
             if (Channel::sanitize($event->channel->getName()) !== $channel) {
                 return;
             }
-            $userKey = array_search($event->user, $this->chatters, true);
-            if ($userKey === false) {
-                return;
-            }
 
             $chatEvent = new ChatEvent($event->user, $event->channel, new DateTimeImmutable(), 'part');
 
             $this->chatEventRepository->add($chatEvent);
+
+            $userKey = array_search($event->user, $this->chatters, true);
+            if ($userKey === false) {
+                return;
+            }
 
             if ($this->debugOnChannel) {
                 $this->tmiClient->say($channel, '[DEBUG] Chatter leaved: ' . $event->user);
