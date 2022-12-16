@@ -76,7 +76,7 @@ class UserRepository
 
     public function refreshFrom(Follower $follower): void
     {
-        $user = $this->getLocallyByLogin($follower->login);
+        $user = $this->getById($follower->id);
 
         if ($user instanceof User) {
             $user->update($follower->login, $follower->name);
