@@ -37,4 +37,23 @@ class ChatEventRepository
             ->getResult();
         return $result;
     }
+
+    public function findLatestEventByUsernameAndChannel(string $username, string $channel): ?ChatEvent
+    {
+        /** @var ?ChatEvent $result */
+        $result = $this->entityManager->createQueryBuilder()
+            ->select('chat_event')
+            ->from(ChatEvent::class, 'chat_event')
+            ->join('chat_event.user', 'user')
+            ->where('chat_event.channel = :channel')
+            ->andWhere('user.login = :username')
+            ->orderBy('chat_event.id')
+            ->setParameter('channel', $channel)
+            ->setParameter('username', $username)
+            ->orderBy('chat_event.createdAt', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+        return $result;
+    }
 }

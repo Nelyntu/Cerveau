@@ -2,10 +2,15 @@
 
 namespace App\Command;
 
+use App\LiveStats\Row;
+use App\LiveStats\Table;
 use Cerveau\AutoMessage;
 use Cerveau\Bot;
 use Cerveau\Factory\EventTrackerFactory;
 use Cerveau\Factory\LiveChannelViewersFactory;
+use Cerveau\Factory\LiveNotFollowerFactory;
+use Cerveau\Statistics\LiveNotFollowerJoinedEvent;
+use Cerveau\Statistics\LiveNotFollowerLeftEvent;
 use Cerveau\Statistics\LiveStat;
 use GhostZero\Tmi\Client;
 use GhostZero\Tmi\Events\Irc\WelcomeEvent;
@@ -33,6 +38,7 @@ class BotRunCommand extends Command
         private readonly array                     $channels,
         private readonly array                     $statsChannels,
         private readonly LiveChannelViewersFactory $liveChannelViewersFactory,
+        private readonly LiveNotFollowerFactory    $liveNotFollowerFactory
     )
     {
         parent::__construct(self::$defaultName);
@@ -40,10 +46,11 @@ class BotRunCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $table = new Table();
         $cursor = new Cursor($output);
         $cursor->clearScreen();
         // on bot start
-        $this->client->on(WelcomeEvent::class, function (WelcomeEvent $e) use ($cursor, $output): void {
+        $this->client->on(WelcomeEvent::class, function (WelcomeEvent $e) use ($table, $cursor, $output): void {
             foreach ($this->channels as $channel) {
                 $this->client->say($channel, $this->translator->trans('bot.start', [], 'bot'));
             }
@@ -53,6 +60,9 @@ class BotRunCommand extends Command
 
             $statsChannels = $this->statsChannels;
             foreach ($statsChannels as $statsChannel) {
+                $row = new Row($statsChannel);
+                $table->addRow($row);
+
                 // event tracker
                 $eventTracker = $this->statisticsFactory->create();
                 $eventTracker->startTracking($statsChannel);
@@ -62,14 +72,36 @@ class BotRunCommand extends Command
                 $viewersEmitter = $liveChannelViewers->getEmitter();
 
                 $viewersEmitter->on('live_channel_viewers.chatters_updated',
-                    function (string $channel, LiveStat $liveStat) use ($cursor, $statsChannels, $output) {
-                        $channelPosition = (int) array_search($channel, $statsChannels);
-                        $cursor->moveToPosition(1, $channelPosition);
-                        $cursor->clearLineAfter();
-                        $output->write($channel.': '.$liveStat->chatterCount. ' / '.$liveStat->botCount);
-                });
+                    function (string $channel, LiveStat $liveStat) use ($table, $row, $cursor, $output) {
+                        $row->chatters = $liveStat->chatterCount . ' / ' . $liveStat->botCount;
+                        $cursor->clearScreen();
+                        $cursor->moveToPosition(1, 0);
+                        $table->toSymfony($output)->render();
+                    });
 
                 $liveChannelViewers->startTracking($statsChannel);
+
+                // live not follower
+                $liveNotFollower = $this->liveNotFollowerFactory->create();
+                $notViewerEmitter = $liveNotFollower->getEmitter();
+
+                $notViewerEmitter->on('live_chatter_not_follower.joined',
+                    function (string $channel, LiveNotFollowerJoinedEvent $liveStat) use ($table, $row, $cursor, $output) {
+                        $row->data = '>>> ' . $liveStat->username . ' ' . ($liveStat->lastSeen !== null ? $liveStat->lastSeen->format('y-m-d H:i') : 'never seen');
+                        $cursor->clearScreen();
+                        $cursor->moveToPosition(1, 0);
+                        $table->toSymfony($output)->render();
+                    });
+
+                $notViewerEmitter->on('live_chatter_not_follower.left',
+                    function (string $channel, LiveNotFollowerLeftEvent $liveStat) use ($table, $row, $cursor, $output) {
+                        $row->data = '<<< ' . $liveStat->username;
+                        $cursor->clearScreen();
+                        $cursor->moveToPosition(1, 0);
+                        $table->toSymfony($output)->render();
+                    });
+
+                $liveNotFollower->startTracking($statsChannel);
             }
         });
 
