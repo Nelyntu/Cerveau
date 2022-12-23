@@ -25,6 +25,8 @@ services:
             $botNickname: '%cerveau.bot.nickname%'
             $channels: '%cerveau.channels%'
             $statsChannels: '%cerveau.stats.channels%'
+            $botClientIrc: '@cerveau.bot.client_irc'
+            $liveDashboardClientIrc: '@cerveau.bot.live_dashboard'
 
     _instanceof:
         \Cerveau\Bot\CommandHandler\CommandHandlerInterface:
@@ -45,8 +47,13 @@ services:
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 
-    GhostZero\Tmi\Client:
-        factory: ['@Cerveau\Factory\IRCClientFactory', 'createClient']
+    cerveau.bot.client_irc:
+        class: GhostZero\Tmi\Client
+        factory: ['@Cerveau\Factory\IRCClientFactory', 'createClientForBot']
+
+    cerveau.bot.live_dashboard:
+        class: GhostZero\Tmi\Client
+        factory: ['@Cerveau\Factory\IRCClientFactory', 'createClientForLiveDashboard']
 
     Symfony\Component\Cache\Adapter\FilesystemAdapter: ~
 

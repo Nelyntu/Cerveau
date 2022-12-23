@@ -12,7 +12,7 @@ class AutoMessage
     /**
      * @param int $interval in minutes
      */
-    public function __construct(private readonly string $botNickname, private readonly Client $client, private readonly int $interval)
+    public function __construct(private readonly string $botNickname, private readonly Client $botClientIrc, private readonly int $interval)
     {
     }
 
@@ -28,7 +28,7 @@ class AutoMessage
     {
         $this->sendNextMessage();
 
-        $this->client->getLoop()->addPeriodicTimer($this->interval * 60, function () {
+        $this->botClientIrc->getLoop()->addPeriodicTimer($this->interval * 60, function () {
             $this->sendNextMessage();
         });
     }
@@ -40,7 +40,7 @@ class AutoMessage
             return;
         }
 
-        $this->client->say($this->botNickname, $message);
+        $this->botClientIrc->say($this->botNickname, $message);
         $nextValue = next($this->messages);
         if ($nextValue === false) {
             reset($this->messages);

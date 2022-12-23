@@ -12,7 +12,7 @@ use GhostZero\Tmi;
 class NotFollowerTrackerFactory
 {
     public function __construct(private readonly Channel             $channel,
-                                private readonly Tmi\Client          $tmiClient,
+                                private readonly Tmi\Client          $liveDashboardClientIrc,
                                 private readonly UserRepository      $userRepository,
                                 private readonly Twitch              $twitch,
                                 private readonly ChatEventRepository $chatEventRepository,
@@ -24,7 +24,7 @@ class NotFollowerTrackerFactory
     {
         return new NotFollowerTracker(
             channel: $this->channel,
-            tmiClient: $this->tmiClient,
+            liveDashboardClientIrc: $this->liveDashboardClientIrc,
             userRepository: $this->userRepository,
             twitch: $this->twitch,
             chatEventRepository: $this->chatEventRepository,

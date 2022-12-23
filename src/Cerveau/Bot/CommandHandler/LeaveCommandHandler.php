@@ -10,7 +10,7 @@ class LeaveCommandHandler implements CommandHandlerInterface
 {
     private const COMMAND_NAME = 'leave';
 
-    public function __construct(private readonly Tmi\Client $ircClient, private readonly UserList $userList)
+    public function __construct(private readonly Tmi\Client $botClientIrc, private readonly UserList $userList)
     {
     }
 
@@ -25,7 +25,7 @@ class LeaveCommandHandler implements CommandHandlerInterface
             return null;
         }
 
-        $this->ircClient->part($command->arguments->firstArgument);
+        $this->botClientIrc->part($command->arguments->firstArgument);
 
         return null;
     }

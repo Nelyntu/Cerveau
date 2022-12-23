@@ -23,7 +23,7 @@ class NotFollowerTracker
 
     public function __construct(
         private readonly Channel             $channel,
-        private readonly Tmi\Client          $tmiClient,
+        private readonly Tmi\Client          $liveDashboardClientIrc,
         private readonly UserRepository      $userRepository,
         private readonly Twitch              $twitch,
         private readonly ChatEventRepository $chatEventRepository,
@@ -58,7 +58,7 @@ class NotFollowerTracker
                 [$channel, new NotFollowerJoinedEvent($username, $chatEvent?->getCreatedAt())]);
         }
 
-        $this->tmiClient->on(JoinEvent::class, function (JoinEvent $event) use ($channel) {
+        $this->liveDashboardClientIrc->on(JoinEvent::class, function (JoinEvent $event) use ($channel) {
             if (Channel::sanitize($event->channel->getName()) !== $channel) {
                 return;
             }
@@ -83,7 +83,7 @@ class NotFollowerTracker
                 [$channel, new NotFollowerJoinedEvent($username, $chatEvent?->getCreatedAt())]);
         });
 
-        $this->tmiClient->on(PartEvent::class, function (PartEvent $event) use ($channel) {
+        $this->liveDashboardClientIrc->on(PartEvent::class, function (PartEvent $event) use ($channel) {
             if (Channel::sanitize($event->channel->getName()) !== $channel) {
                 return;
             }

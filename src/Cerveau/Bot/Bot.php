@@ -17,11 +17,11 @@ class Bot
      * @param string[] $channels
      */
     public function __construct(
-        private readonly Tmi\Client $ircClient,
+        private readonly Tmi\Client      $botClientIrc,
         private readonly LoggerInterface $logger,
-        array $options,
-        protected CommandDispatcher $commands,
-        private readonly array $channels,
+        array                            $options,
+        protected CommandDispatcher      $commands,
+        private readonly array           $channels,
     ) {
         if (PHP_SAPI !== 'cli') {
             trigger_error(
@@ -48,10 +48,10 @@ class Bot
         $this->logger->info('[T][CLOSE]');
         if ($this->running) {
             $this->running = false;
-            foreach ($this->ircClient->getChannels() as $channel) {
-                $this->ircClient->part($channel);
+            foreach ($this->botClientIrc->getChannels() as $channel) {
+                $this->botClientIrc->part($channel);
             }
-            $this->ircClient->close();
+            $this->botClientIrc->close();
         }
     }
 
@@ -60,7 +60,7 @@ class Bot
      */
     protected function connect(): void
     {
-        $this->ircClient->on(Tmi\Events\Twitch\MessageEvent::class, function (Tmi\Events\Twitch\MessageEvent $e) {
+        $this->botClientIrc->on(Tmi\Events\Twitch\MessageEvent::class, function (Tmi\Events\Twitch\MessageEvent $e) {
             if (!\in_array(Channel::sanitize($e->channel), $this->channels)) {
                 return;
             }
@@ -69,7 +69,7 @@ class Bot
             $this->process($message);
         });
 
-        $this->ircClient->connect();
+        $this->botClientIrc->connect();
     }
 
     protected function process(Message $message): void
@@ -80,7 +80,7 @@ class Bot
         }
 
         $payload = '@' . $response->fromUser . ', ' . $response->message . "\n";
-        $this->ircClient->say($response->channel, $payload);
+        $this->botClientIrc->say($response->channel, $payload);
     }
 
     protected function badWordsCheck(string $message): bool
@@ -119,6 +119,6 @@ class Bot
 
     public function ban(string $channel, string $user, string $reason = ''): void
     {
-        $this->ircClient->say($channel, '/ban ' . $user . ' ' . $reason);
+        $this->botClientIrc->say($channel, '/ban ' . $user . ' ' . $reason);
     }
 }

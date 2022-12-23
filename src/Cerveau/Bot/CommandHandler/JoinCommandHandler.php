@@ -10,7 +10,7 @@ class JoinCommandHandler implements CommandHandlerInterface
 {
     private const COMMAND_NAME = 'join';
 
-    public function __construct(private readonly Tmi\Client $ircClient, private readonly UserList $userList)
+    public function __construct(private readonly Tmi\Client $botClientIrc, private readonly UserList $userList)
     {
     }
 
@@ -25,7 +25,7 @@ class JoinCommandHandler implements CommandHandlerInterface
         if ($channel === null) {
             return null;
         }
-        $this->ircClient->join($channel);
+        $this->botClientIrc->join($channel);
 
         return null;
     }

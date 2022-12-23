@@ -21,7 +21,7 @@ class ChattersCountUpdateTracker
 
     public function __construct(
         private readonly Channel    $channel,
-        private readonly Tmi\Client $tmiClient,
+        private readonly Tmi\Client $liveDashboardClientIrc,
     )
     {
         $this->emitter = new EventEmitter();
@@ -39,7 +39,7 @@ class ChattersCountUpdateTracker
 
         $this->getChattersUpdate($channel);
 
-        $this->tmiClient->on(JoinEvent::class, function (JoinEvent $event) use ($channel) {
+        $this->liveDashboardClientIrc->on(JoinEvent::class, function (JoinEvent $event) use ($channel) {
             if (Channel::sanitize($event->channel->getName()) !== $channel) {
                 return;
             }
@@ -67,7 +67,7 @@ class ChattersCountUpdateTracker
             $this->getChattersUpdate($channel);
         });
 
-        $this->tmiClient->on(PartEvent::class, function (PartEvent $event) use ($channel) {
+        $this->liveDashboardClientIrc->on(PartEvent::class, function (PartEvent $event) use ($channel) {
             if (Channel::sanitize($event->channel->getName()) !== $channel) {
                 return;
             }
@@ -93,7 +93,7 @@ class ChattersCountUpdateTracker
             $this->getChattersUpdate($channel);
         });
 
-        $this->tmiClient->on(MessageEvent::class, function (MessageEvent $event) use ($channel) {
+        $this->liveDashboardClientIrc->on(MessageEvent::class, function (MessageEvent $event) use ($channel) {
             if (Channel::sanitize($event->channel->getName()) !== $channel) {
                 return;
             }

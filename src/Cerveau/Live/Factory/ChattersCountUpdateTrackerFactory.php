@@ -9,13 +9,13 @@ use GhostZero\Tmi;
 class ChattersCountUpdateTrackerFactory
 {
     public function __construct(private readonly Channel    $channel,
-                                private readonly Tmi\Client $tmiClient,
+                                private readonly Tmi\Client $liveDashboardClientIrc,
     )
     {
     }
 
     public function create(): ChattersCountUpdateTracker
     {
-        return new ChattersCountUpdateTracker($this->channel, $this->tmiClient,);
+        return new ChattersCountUpdateTracker($this->channel, $this->liveDashboardClientIrc,);
     }
 }

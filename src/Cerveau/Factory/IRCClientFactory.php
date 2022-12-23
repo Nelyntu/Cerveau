@@ -19,9 +19,23 @@ class IRCClientFactory
     {
     }
 
-    public function createClient(): Client
+    public function createClientForBot(): Client
+    {
+        return $this->createClient(true, $this->channels);
+    }
+
+    public function createClientForLiveDashboard(): Client
+    {
+        return $this->createClient(false, $this->statsChannels);
+    }
+
+    /**
+     * @param string[] $channels
+     */
+    private function createClient(bool $debug, array $channels): Client
     {
         return new Client(new ClientOptions([
+            'options' => ['debug' => $debug],
             'connection' => [
                 'secure' => true,
                 'reconnect' => true,
@@ -31,7 +45,7 @@ class IRCClientFactory
                 'username' => $this->botNickname,
                 'password' => $this->secret,
             ],
-            'channels' => array_unique([...$this->statsChannels, ...$this->channels,]),
+            'channels' => $channels,
         ]));
     }
 }

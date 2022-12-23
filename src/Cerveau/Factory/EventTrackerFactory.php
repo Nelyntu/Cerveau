@@ -11,7 +11,7 @@ use GhostZero\Tmi;
 class EventTrackerFactory
 {
     public function __construct(private readonly Channel             $channel,
-                                private readonly Tmi\Client          $tmiClient,
+                                private readonly Tmi\Client          $liveDashboardClientIrc,
                                 private readonly ChatEventRepository $chatEventRepository,
                                 private readonly UserRepository      $userRepository,
     )
@@ -20,6 +20,6 @@ class EventTrackerFactory
 
     public function create(): EventTracker
     {
-        return new EventTracker($this->channel, $this->tmiClient, $this->chatEventRepository, $this->userRepository);
+        return new EventTracker($this->channel, $this->liveDashboardClientIrc, $this->chatEventRepository, $this->userRepository);
     }
 }
