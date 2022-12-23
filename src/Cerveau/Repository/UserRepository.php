@@ -5,7 +5,7 @@ namespace Cerveau\Repository;
 use Cerveau\Entity\User;
 use Cerveau\Twitch\Follower;
 use Cerveau\Twitch\UserApi;
-use Cerveau\Twitch\UserNotFound;
+use Cerveau\Twitch\UserNotFoundException;
 use Doctrine\ORM\EntityManagerInterface;
 
 class UserRepository
@@ -18,7 +18,7 @@ class UserRepository
     }
 
     /**
-     * @throws UserNotFound
+     * @throws UserNotFoundException
      */
     public function getOrCreateByUsername(string $username): User
     {
@@ -34,7 +34,7 @@ class UserRepository
 
         // is ID known ?
         $user = $this->getById($apiUser->id);
-        if(!$user instanceof \Cerveau\Entity\User) {
+        if(!$user instanceof User) {
             // new user
             $user = new User($apiUser->id, $apiUser->login, $apiUser->name);
             $this->entityManager->persist($user);

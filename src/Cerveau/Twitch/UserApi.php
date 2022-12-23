@@ -2,13 +2,10 @@
 
 namespace Cerveau\Twitch;
 
-use Symfony\Component\Cache\Adapter\FilesystemAdapter;
-use TwitchApi\TwitchApi;
-
 class UserApi extends AbstractTwitchApi
 {
     /**
-     * @throws UserNotFound
+     * @throws UserNotFoundException
      */
     public function getUserByName(string $name): User
     {
@@ -19,7 +16,7 @@ class UserApi extends AbstractTwitchApi
         $decodedResponse = json_decode((string)$response->getBody(), true, 512, JSON_THROW_ON_ERROR);
 
         if (empty($decodedResponse['data'])) {
-            throw new UserNotFound($name);
+            throw new UserNotFoundException($name);
         }
 
         $data = $decodedResponse['data'][0];

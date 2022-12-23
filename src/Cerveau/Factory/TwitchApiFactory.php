@@ -2,6 +2,7 @@
 
 namespace Cerveau\Factory;
 
+use TwitchApi\HelixGuzzleClient;
 use TwitchApi\TwitchApi;
 
 class TwitchApiFactory
@@ -12,7 +13,7 @@ class TwitchApiFactory
 
     public function createAPI(): TwitchApi
     {
-        $helixGuzzleClient = new \TwitchApi\HelixGuzzleClient($this->twitchClientId);
-        return new \TwitchApi\TwitchApi($helixGuzzleClient, $this->twitchClientId, $this->twitchClientSecret);
+        $helixGuzzleClient = new HelixGuzzleClient($this->twitchClientId);
+        return new TwitchApi($helixGuzzleClient, $this->twitchClientId, $this->twitchClientSecret);
     }
 }

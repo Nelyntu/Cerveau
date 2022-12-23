@@ -3,7 +3,7 @@
 namespace App\Command;
 
 use Cerveau\Repository\UserRepository;
-use Cerveau\Statistics\Channel;
+use Cerveau\Twitch\Channel;
 use Cerveau\Twitch\Follower;
 use Cerveau\Twitch\Twitch;
 use Symfony\Component\Console\Attribute\AsCommand;

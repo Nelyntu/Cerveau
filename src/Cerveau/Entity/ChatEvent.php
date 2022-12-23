@@ -2,7 +2,7 @@
 
 namespace Cerveau\Entity;
 
-use Cerveau\Statistics\Channel;
+use Cerveau\Twitch\Channel;
 
 class ChatEvent
 {

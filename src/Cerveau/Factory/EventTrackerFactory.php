@@ -2,10 +2,10 @@
 
 namespace Cerveau\Factory;
 
+use Cerveau\EventTracker\EventTracker;
 use Cerveau\Repository\ChatEventRepository;
 use Cerveau\Repository\UserRepository;
-use Cerveau\Statistics\Channel;
-use Cerveau\Statistics\EventTracker;
+use Cerveau\Twitch\Channel;
 use GhostZero\Tmi;
 
 class EventTrackerFactory

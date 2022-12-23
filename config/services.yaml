@@ -27,7 +27,7 @@ services:
             $statsChannels: '%cerveau.stats.channels%'
 
     _instanceof:
-        \Cerveau\CommandHandler\CommandHandlerInterface:
+        \Cerveau\Bot\CommandHandler\CommandHandlerInterface:
             tags: ['cerveau.command']
 
     # makes classes in src/ available to be used as services
@@ -53,21 +53,21 @@ services:
     TwitchApi\TwitchApi:
         factory: ['@Cerveau\Factory\TwitchApiFactory', 'createAPI']
 
-    Cerveau\AutoMessage:
+    Cerveau\Bot\AutoMessage:
         arguments:
             $interval: 20
         calls:
             - setMessages:
                   $messages: '%cerveau.automessages.messages%'
 
-    Cerveau\CommandDispatcher:
+    Cerveau\Bot\CommandDispatcher:
         arguments:
             $commandSymbols: ['!']
         calls:
             - setCommands:
                 $commands: !tagged_iterator cerveau.command
 
-    Cerveau\CommandHandler\ResponseCommandHandler:
+    Cerveau\Bot\CommandHandler\ResponseCommandHandler:
         arguments:
             $responses:
                 ping: Pong!
@@ -79,7 +79,7 @@ services:
         arguments:
             $secret: "%env(CERVEAU_TWITCH_OAUTH)%"
 
-    Cerveau\Bot:
+    Cerveau\Bot\Bot:
         arguments:
             $options:
                 badwords: '%cerveau.badWords%'
@@ -89,6 +89,6 @@ services:
             $twitchClientId: '%cerveau.twitch.clientId%'
             $twitchClientSecret: '%cerveau.twitch.clientSecret%'
 
-    Cerveau\UserList:
+    Cerveau\Bot\UserList:
         arguments:
             $superUsers: '%cerveau.superUsers%'

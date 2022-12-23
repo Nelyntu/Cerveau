@@ -40,11 +40,11 @@ Settings are in `.env` file:
 
 Customization is all about custom commands.
 
-Just create your class which implements `\ Cerveau\CommandHandler\CommandHandlerInterface` (take a look at [!php](src/Cerveau/CommandHandler/PhpCommandHandler.php) as example)
+Just create your class which implements `\Cerveau\Bot\CommandHandler\CommandHandlerInterface` (take a look at [!php](src/Cerveau/CommandHandler/PhpCommandHandler.php) as example)
 
 Optionally, the bot will respond to the chat with the string returned by the `handle` method.
 
-As alternative, you can extend `\ Cerveau\CommandHandler\CoolDownableCommandHandler`.
+As alternative, you can extend `\Cerveau\Bot\CommandHandler\CoolDownableCommandHandler`.
 
 It has a `checkUserCoolDown` method to easily handle users cooldown.
 

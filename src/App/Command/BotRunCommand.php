@@ -4,14 +4,14 @@ namespace App\Command;
 
 use App\LiveStats\Row;
 use App\LiveStats\Table;
-use Cerveau\AutoMessage;
-use Cerveau\Bot;
+use Cerveau\Bot\AutoMessage;
+use Cerveau\Bot\Bot;
 use Cerveau\Factory\EventTrackerFactory;
-use Cerveau\Factory\LiveChannelViewersFactory;
-use Cerveau\Factory\LiveNotFollowerFactory;
-use Cerveau\Statistics\LiveNotFollowerJoinedEvent;
-use Cerveau\Statistics\LiveNotFollowerLeftEvent;
-use Cerveau\Statistics\LiveStat;
+use Cerveau\Live\Event\ChattersCountUpdatedEvent;
+use Cerveau\Live\Event\NotFollowerJoinedEvent;
+use Cerveau\Live\Event\NotFollowerLeftEvent;
+use Cerveau\Live\Factory\ChattersCountUpdateTrackerFactory;
+use Cerveau\Live\Factory\NotFollowerTrackerFactory;
 use GhostZero\Tmi\Client;
 use GhostZero\Tmi\Events\Irc\WelcomeEvent;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -30,15 +30,15 @@ class BotRunCommand extends Command
      * @param string[] $statsChannels
      */
     public function __construct(
-        private readonly Bot                       $bot,
-        private readonly Client                    $client,
-        private readonly TranslatorInterface       $translator,
-        private readonly AutoMessage               $autoMessage,
-        private readonly EventTrackerFactory       $statisticsFactory,
-        private readonly array                     $channels,
-        private readonly array                     $statsChannels,
-        private readonly LiveChannelViewersFactory $liveChannelViewersFactory,
-        private readonly LiveNotFollowerFactory    $liveNotFollowerFactory
+        private readonly Bot                               $bot,
+        private readonly Client                            $client,
+        private readonly TranslatorInterface               $translator,
+        private readonly AutoMessage                       $autoMessage,
+        private readonly EventTrackerFactory               $statisticsFactory,
+        private readonly array                             $channels,
+        private readonly array                             $statsChannels,
+        private readonly ChattersCountUpdateTrackerFactory $liveChannelViewersFactory,
+        private readonly NotFollowerTrackerFactory         $liveNotFollowerFactory
     )
     {
         parent::__construct(self::$defaultName);
@@ -46,11 +46,11 @@ class BotRunCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $table = new Table();
         $cursor = new Cursor($output);
         $cursor->clearScreen();
         // on bot start
-        $this->client->on(WelcomeEvent::class, function (WelcomeEvent $e) use ($table, $cursor, $output): void {
+        $this->client->on(WelcomeEvent::class, function () use ($cursor, $output): void {
+            $table = new Table();
             foreach ($this->channels as $channel) {
                 $this->client->say($channel, $this->translator->trans('bot.start', [], 'bot'));
             }
@@ -72,7 +72,7 @@ class BotRunCommand extends Command
                 $viewersEmitter = $liveChannelViewers->getEmitter();
 
                 $viewersEmitter->on('live_channel_viewers.chatters_updated',
-                    function (string $channel, LiveStat $liveStat) use ($table, $row, $cursor, $output) {
+                    function (string $channel, ChattersCountUpdatedEvent $liveStat) use ($table, $row, $cursor, $output) {
                         $row->chatters = $liveStat->chatterCount . ' / ' . $liveStat->botCount;
                         $cursor->clearScreen();
                         $cursor->moveToPosition(1, 0);
@@ -86,7 +86,7 @@ class BotRunCommand extends Command
                 $notViewerEmitter = $liveNotFollower->getEmitter();
 
                 $notViewerEmitter->on('live_chatter_not_follower.joined',
-                    function (string $channel, LiveNotFollowerJoinedEvent $liveStat) use ($table, $row, $cursor, $output) {
+                    function (string $channel, NotFollowerJoinedEvent $liveStat) use ($table, $row, $cursor, $output) {
                         $row->data = '>>> ' . $liveStat->username . ' ' . ($liveStat->lastSeen !== null ? $liveStat->lastSeen->format('y-m-d H:i') : 'never seen');
                         $cursor->clearScreen();
                         $cursor->moveToPosition(1, 0);
@@ -94,7 +94,7 @@ class BotRunCommand extends Command
                     });
 
                 $notViewerEmitter->on('live_chatter_not_follower.left',
-                    function (string $channel, LiveNotFollowerLeftEvent $liveStat) use ($table, $row, $cursor, $output) {
+                    function (string $channel, NotFollowerLeftEvent $liveStat) use ($table, $row, $cursor, $output) {
                         $row->data = '<<< ' . $liveStat->username;
                         $cursor->clearScreen();
                         $cursor->moveToPosition(1, 0);
@@ -108,7 +108,7 @@ class BotRunCommand extends Command
         // on bot end (CTRL+C)
         if (defined('SIGINT')) {
             $loop = $this->client->getLoop();
-            $loop->addSignal(SIGINT, function (int $signal) use ($loop) {
+            $loop->addSignal(SIGINT, function () use ($loop) {
                 foreach ($this->channels as $channel) {
                     $this->client->say($channel, $this->translator->trans('bot.end', [], 'bot'));
                     $loop->futureTick(function () use ($loop): void {

@@ -2,7 +2,7 @@
 
 namespace App\Command;
 
-use Cerveau\Statistics\Channel;
+use Cerveau\Twitch\Channel;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
