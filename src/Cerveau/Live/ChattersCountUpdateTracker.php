@@ -13,6 +13,7 @@ use function in_array;
 
 class ChattersCountUpdateTracker
 {
+    final public const LIVE_DASHBOARD_CHATTERS_COUNT_UPDATED = 'live_dashboard.chatters_count_updated';
     /** @var string[] */
     private array $chatters;
     /** @var string[] */
@@ -124,7 +125,7 @@ class ChattersCountUpdateTracker
 
     public function getChattersUpdate(string $channel): void
     {
-        $this->emitter->emit('live_channel_viewers.chatters_updated',
+        $this->emitter->emit(self::LIVE_DASHBOARD_CHATTERS_COUNT_UPDATED,
             [$channel, new ChattersCountUpdatedEvent(count($this->chatters), count($this->bots))]);
     }
 }

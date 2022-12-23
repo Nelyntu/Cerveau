@@ -17,6 +17,9 @@ use function in_array;
 
 class NotFollowerTracker
 {
+    final const LIVE_DASHBOARD_NOT_FOLLOWER_JOINED = 'live_dashboard.not_follower_joined';
+    final const LIVE_DASHBOARD_NOT_FOLLOWER_LEFT = 'live_dashboard.not_follower_left';
+
     private readonly EventEmitter $emitter;
     /** @var string[] */
     private array $followers;
@@ -54,7 +57,7 @@ class NotFollowerTracker
 
             $chatEvent = $this->chatEventRepository->findLatestEventByUsernameAndChannel($username, $channel);
 
-            $this->emitter->emit('live_chatter_not_follower.joined',
+            $this->emitter->emit(self::LIVE_DASHBOARD_NOT_FOLLOWER_JOINED,
                 [$channel, new NotFollowerJoinedEvent($username, $chatEvent?->getCreatedAt())]);
         }
 
@@ -79,7 +82,7 @@ class NotFollowerTracker
 
             $chatEvent = $this->chatEventRepository->findLatestEventByUsernameAndChannel($username, $channel);
 
-            $this->emitter->emit('live_chatter_not_follower.joined',
+            $this->emitter->emit(self::LIVE_DASHBOARD_NOT_FOLLOWER_JOINED,
                 [$channel, new NotFollowerJoinedEvent($username, $chatEvent?->getCreatedAt())]);
         });
 
@@ -104,7 +107,7 @@ class NotFollowerTracker
 
             $chatEvent = $this->chatEventRepository->findLatestEventByUsernameAndChannel($username, $channel);
 
-            $this->emitter->emit('live_chatter_not_follower.left',
+            $this->emitter->emit(self::LIVE_DASHBOARD_NOT_FOLLOWER_LEFT,
                 [$channel, new NotFollowerLeftEvent($username, $chatEvent?->getCreatedAt())]);
         });
     }

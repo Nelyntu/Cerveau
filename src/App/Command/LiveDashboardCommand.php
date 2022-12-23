@@ -5,11 +5,13 @@ namespace App\Command;
 use App\LiveStats\Row;
 use App\LiveStats\Table;
 use Cerveau\Factory\EventTrackerFactory;
+use Cerveau\Live\ChattersCountUpdateTracker;
 use Cerveau\Live\Event\ChattersCountUpdatedEvent;
 use Cerveau\Live\Event\NotFollowerJoinedEvent;
 use Cerveau\Live\Event\NotFollowerLeftEvent;
 use Cerveau\Live\Factory\ChattersCountUpdateTrackerFactory;
 use Cerveau\Live\Factory\NotFollowerTrackerFactory;
+use Cerveau\Live\NotFollowerTracker;
 use GhostZero\Tmi\Client;
 use GhostZero\Tmi\Events\Irc\WelcomeEvent;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -57,7 +59,7 @@ class LiveDashboardCommand extends Command
                 $liveChannelViewers = $this->chattersCountUpdateTrackerFactory->create();
                 $viewersEmitter = $liveChannelViewers->getEmitter();
 
-                $viewersEmitter->on('live_channel_viewers.chatters_updated',
+                $viewersEmitter->on(ChattersCountUpdateTracker::LIVE_DASHBOARD_CHATTERS_COUNT_UPDATED,
                     function (string $channel, ChattersCountUpdatedEvent $liveStat) use ($table, $row, $cursor, $output) {
                         $row->chatters = $liveStat->chatterCount . ' / ' . $liveStat->botCount;
                         $cursor->clearScreen();
@@ -71,7 +73,7 @@ class LiveDashboardCommand extends Command
                 $liveNotFollower = $this->notFollowerTrackerFactory->create();
                 $notViewerEmitter = $liveNotFollower->getEmitter();
 
-                $notViewerEmitter->on('live_chatter_not_follower.joined',
+                $notViewerEmitter->on(NotFollowerTracker::LIVE_DASHBOARD_NOT_FOLLOWER_JOINED,
                     function (string $channel, NotFollowerJoinedEvent $liveStat) use ($table, $row, $cursor, $output) {
                         $row->data = '>>> ' . $liveStat->username . ' ' . ($liveStat->lastSeen !== null ? $liveStat->lastSeen->format('y-m-d H:i') : 'never seen');
                         $cursor->clearScreen();
@@ -79,7 +81,7 @@ class LiveDashboardCommand extends Command
                         $table->toSymfony($output)->render();
                     });
 
-                $notViewerEmitter->on('live_chatter_not_follower.left',
+                $notViewerEmitter->on(NotFollowerTracker::LIVE_DASHBOARD_NOT_FOLLOWER_LEFT,
                     function (string $channel, NotFollowerLeftEvent $liveStat) use ($table, $row, $cursor, $output) {
                         $row->data = '<<< ' . $liveStat->username;
                         $cursor->clearScreen();
