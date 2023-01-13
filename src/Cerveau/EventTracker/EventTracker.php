@@ -6,6 +6,7 @@ use Cerveau\Entity\ChatEvent;
 use Cerveau\Repository\ChatEventRepository;
 use Cerveau\Repository\UserRepository;
 use Cerveau\Twitch\Channel;
+use Cerveau\Twitch\Twitch;
 use DateTimeImmutable;
 use GhostZero\Tmi;
 use GhostZero\Tmi\Events\Irc\JoinEvent;
@@ -19,6 +20,7 @@ class EventTracker
         private readonly Tmi\Client          $liveDashboardClientIrc,
         private readonly ChatEventRepository $chatEventRepository,
         private readonly UserRepository      $userRepository,
+        private readonly Twitch $twitch,
     )
     {
     }
@@ -26,7 +28,9 @@ class EventTracker
     public function startTracking(string $channel): void
     {
         $user = $this->userRepository->getOrCreateByUsername($channel);
-        $chatEvent = new ChatEvent($channel, new DateTimeImmutable(), 'start', $user);
+        $stream = $this->twitch->getStream($user);
+
+        $chatEvent = new ChatEvent($channel, new DateTimeImmutable(), 'start', $user, ['stream_id' => $stream->id,]);
 
         $this->chatEventRepository->add($chatEvent);
 

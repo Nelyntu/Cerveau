@@ -41,4 +41,18 @@ class Twitch extends AbstractTwitchApi
 
         return $followers;
     }
+
+    public function getStream(\Cerveau\Entity\User $user): Stream
+    {
+        $accessToken = $this->getAccessToken('');
+
+        $response = $this->twitchApi->getStreamsApi()
+            ->getStreamForUserId($accessToken, (string)$user->getId());
+
+        /** @var array{data: array<array{id: int,}>, pagination: array{cursor?: string}} $decodedResponse */
+        $decodedResponse = json_decode((string)$response->getBody(), true, 512, JSON_THROW_ON_ERROR);
+
+        $streamId = $decodedResponse['data'][0]['id'] ?? null;
+        return new Stream($user, $streamId);
+    }
 }

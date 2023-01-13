@@ -56,11 +56,22 @@ class StatisticsGenerator
     {
         $chatEventsChunks = [];
         $currentChatEventsChunk = [];
+        $currentStreamId = null;
         foreach ($chatEvents as $chatEvent) {
-            if (!empty($currentChatEventsChunk) && $chatEvent->getType() === 'start') {
-                $chatEventsChunks[] = $currentChatEventsChunk;
-                $currentChatEventsChunk = [];
-                continue;
+            if ($chatEvent->getType() === 'start') {
+                $eventStreamId = $chatEvent->getData()['stream_id'];
+                // initialize currentStreamId
+                if ($currentStreamId === null) {
+                    $currentStreamId = $eventStreamId;
+                }
+
+                //
+                if (!empty($currentChatEventsChunk) && $eventStreamId !== $currentStreamId) {
+                    $chatEventsChunks[] = $currentChatEventsChunk;
+                    $currentChatEventsChunk = [$chatEvent];
+                    $currentStreamId = $eventStreamId;
+                    continue;
+                }
             }
 
             $currentChatEventsChunk[] = $chatEvent;
