@@ -30,14 +30,14 @@ class EventTracker
         $user = $this->userRepository->getOrCreateByUsername($channel);
         $stream = $this->twitch->getStream($user);
 
-        $chatEvent = new ChatEvent($channel, new DateTimeImmutable(), 'start', $user, ['stream_id' => $stream->id,]);
+        $chatEvent = ChatEvent::createStart($channel, new DateTimeImmutable(), $user, $stream->id);
 
         $this->chatEventRepository->add($chatEvent);
 
         $chatters = $this->channel->getRealChatters($channel);
         foreach ($chatters as $chatter) {
             $user = $this->userRepository->getOrCreateByUsername($chatter);
-            $chatEvent = new ChatEvent($channel, new DateTimeImmutable(), 'init', $user);
+            $chatEvent = ChatEvent::createInit($channel, new DateTimeImmutable(), $user);
 
             $this->chatEventRepository->add($chatEvent);
         }
@@ -52,7 +52,7 @@ class EventTracker
             }
 
             $user = $this->userRepository->getOrCreateByUsername($event->user);
-            $chatEvent = new ChatEvent($event->channel, new DateTimeImmutable(), 'join', $user);
+            $chatEvent = ChatEvent::createJoin($event->channel, new DateTimeImmutable(), $user);
 
             $this->chatEventRepository->add($chatEvent);
         });
@@ -67,7 +67,7 @@ class EventTracker
             }
 
             $user = $this->userRepository->getOrCreateByUsername($event->user);
-            $chatEvent = new ChatEvent($event->channel, new DateTimeImmutable(), 'part', $user);
+            $chatEvent = ChatEvent::createPart($event->channel, new DateTimeImmutable(), $user);
 
             $this->chatEventRepository->add($chatEvent);
         });
@@ -82,7 +82,7 @@ class EventTracker
             }
 
             $user = $this->userRepository->getOrCreateByUsername($event->user);
-            $chatEvent = new ChatEvent($event->channel, new DateTimeImmutable(), 'message', $user);
+            $chatEvent = ChatEvent::createMessage($event->channel, new DateTimeImmutable(), $user);
 
             $this->chatEventRepository->add($chatEvent);
         });
